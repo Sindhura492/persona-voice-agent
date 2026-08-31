@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { primeBrandAudio } from "@/lib/audio/brandSound";
 import { useLocale } from "@/features/locale/LocaleProvider";
 import { CallTranscript } from "./CallTranscript";
 import { GuestDetailsForm } from "./GuestDetailsForm";
@@ -39,6 +38,7 @@ export function VoiceWidget({
     startCall,
     endCall,
     isActive,
+    isStarting,
     connectPulse,
     detailFocus,
     isSharingDetails,
@@ -48,7 +48,8 @@ export function VoiceWidget({
     loyaltyPreview,
   } = session;
   const isLight = surface === "light";
-  const awaitingConsent = showDisclosure && !isActive && state === "idle";
+  const awaitingConsent =
+    showDisclosure && !isActive && !isStarting && state === "idle";
 
   const statusClass = isActive
     ? "font-semibold text-ice-deep"
@@ -75,6 +76,9 @@ export function VoiceWidget({
           <p className="mt-sm text-small leading-relaxed text-charcoal">
             {widgetConfig.gdprDisclosures[locale]}
           </p>
+          <p className="mt-sm text-small leading-relaxed text-graphite">
+            {widgetConfig.micDisclosures[locale]}
+          </p>
         </div>
       ) : null}
 
@@ -97,7 +101,7 @@ export function VoiceWidget({
         requireBoth={bookingIntent}
         guestName={session.guestDetails.guestName}
         guestEmail={session.guestDetails.guestEmail}
-        disabled={state === "connecting" || isSharingDetails}
+        disabled={isStarting || isSharingDetails}
         isSharing={isSharingDetails}
         onChange={setGuestDetails}
         onShare={shareGuestDetails}
@@ -116,14 +120,13 @@ export function VoiceWidget({
                 connectPulse ? " voice-connect-pulse-btn" : ""
               }`
         }
+        disabled={!isActive && isStarting}
         onClick={() => {
           if (isActive) {
             endCall();
             return;
           }
-          void primeBrandAudio().then(() => {
-            void startCall();
-          });
+          void startCall();
         }}
       >
         {isActive ? END_LABEL[locale] : primaryLabel}

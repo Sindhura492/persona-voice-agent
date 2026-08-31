@@ -7,6 +7,11 @@ const IDLE_LABEL: Record<Locale, string> = {
   de: "Wir sind bereit",
 };
 
+const REQUESTING_MIC_LABEL: Record<Locale, string> = {
+  en: "Allow microphone access in your browser prompt…",
+  de: "Bitte Mikrofonzugriff im Browser-Dialog erlauben…",
+};
+
 const CONNECTING_LABEL: Record<Locale, string> = {
   en: "Connecting…",
   de: "Verbindung wird hergestellt…",
@@ -34,6 +39,8 @@ export function voiceStateLabel(
   switch (sessionState) {
     case "idle":
       return IDLE_LABEL[locale];
+    case "requesting_permission":
+      return REQUESTING_MIC_LABEL[locale];
     case "connecting":
       return CONNECTING_LABEL[locale];
     case "connected":

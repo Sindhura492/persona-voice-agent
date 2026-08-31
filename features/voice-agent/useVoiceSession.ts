@@ -7,6 +7,7 @@ import {
   playBrandSound,
   primeBrandAudio,
 } from "@/lib/audio/brandSound";
+import { ensureMicrophoneAccess } from "@/lib/audio/microphoneAccess";
 import type { GuestDetails } from "./guestDetailsCopy";
 import {
   detectBookingIntent,
@@ -25,6 +26,7 @@ const EMPTY_GUEST_DETAILS: GuestDetails = { guestName: "", guestEmail: "" };
 
 export type VoiceSessionState =
   | "idle"
+  | "requesting_permission"
   | "connecting"
   | "connected"
   | "speaking"
@@ -178,6 +180,9 @@ export function useVoiceSession() {
     const onCallStarted = () => {
       setError(null);
       setState("connected");
+      void client.startAudioPlayback().catch(() => {
+        // Browsers that block playback until gesture usually unblock via the CTA click.
+      });
     };
 
     const onAgentStartTalking = () => {
@@ -316,11 +321,13 @@ export function useVoiceSession() {
     setBookingIntent(false);
     brandPlayedRef.current = false;
     clearConnectPulse();
-    await primeBrandAudio();
-    setState("connecting");
-    triggerConnectFeedback();
+    setState("requesting_permission");
 
     try {
+      await ensureMicrophoneAccess();
+      await primeBrandAudio();
+      setState("connecting");
+      triggerConnectFeedback();
       const agentId = widgetConfig.agentId;
       const details = guestDetailsRef.current;
       const response = await fetch(widgetConfig.createWebCallPath, {
@@ -346,6 +353,9 @@ export function useVoiceSession() {
       client.stopCall();
     }
   }, [clearConnectPulse, triggerConnectFeedback]);
+
+  const isStarting =
+    state === "requesting_permission" || state === "connecting";
 
   const endCall = useCallback(() => {
     clientRef.current?.stopCall();
@@ -378,5 +388,6 @@ export function useVoiceSession() {
     shareGuestDetails,
     isActive:
       state === "connecting" || state === "connected" || state === "speaking",
+    isStarting,
   };
 }
