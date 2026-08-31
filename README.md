@@ -1,36 +1,116 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Persona Voice Agent
 
-## Getting Started
+Voice concierge POC for a boutique alpine ski resort (**Snowveil**). Guests talk to an AI concierge in the browser, type name and email when prompted, and complete booking, loyalty, gear fitting, and support flows in English or German.
 
-First, run the development server:
+**Stack:** Next.js 14 · React · TypeScript · Tailwind CSS · [Retell](https://www.retellai.com/) web voice · [Supabase](https://supabase.com/) (Postgres + Edge Functions + Realtime) · [n8n](https://n8n.io/) (transactional email)
+
+## Features
+
+- **Web voice agent** via Retell with live transcript and GDPR disclosure before the call
+- **Typed guest details** form (name + email) synced silently to the live call; no browser TTS
+- **Booking workflows:** availability, create, lookup, reschedule, cancel
+- **Summit Circle loyalty:** balance lookup, welcome points for new guests, redemption on booking
+- **Gear fitting, waitlist, plan/loyalty email brochures** via n8n
+- **Safety escalation** for medical, injury, avalanche, or terrain topics
+- **Realtime status panels** on the landing page (booking, loyalty, gear, waitlist)
+- **QA dashboard** at `/qa` (gated by `QA_ACCESS_KEY`)
+
+## Architecture
+
+```
+Browser (Next.js)
+  ├── Retell Web SDK ──► voice + tools
+  ├── /api/retell/web-call ──► Retell access tokens
+  └── /api/retell/sync-guest-details ──► live call variable updates
+
+Supabase Edge Functions ◄── Retell custom tools (booking, loyalty, etc.)
+  ├── Postgres (bookings, loyalty, transcripts, …)
+  └── Database webhooks ──► n8n ──► Gmail
+```
+
+Retell agent prompt and tool wiring: [`docs/AGENT_CONFIG.md`](docs/AGENT_CONFIG.md)
+
+## Quick start
+
+### Prerequisites
+
+- Node.js 20+
+- Supabase project with migrations applied
+- Retell agent configured with custom tools pointing at your Edge Functions
+- n8n webhook for emails (optional for local UI dev)
+
+### Install
+
+```bash
+git clone https://github.com/Sindhura492/persona-voice-agent.git
+cd persona-voice-agent
+npm install
+```
+
+### Environment
+
+Copy the example file and fill in your keys:
+
+```bash
+cp .env.example .env.local
+```
+
+| Variable | Purpose |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Browser Supabase client |
+| `NEXT_PUBLIC_RETELL_AGENT_ID` | Retell agent ID |
+| `NEXT_PUBLIC_RETELL_PUBLIC_KEY` | Retell public key for web calls |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-side Supabase (never expose to client) |
+| `RETELL_API_KEY` | Server-side web call tokens + live call sync |
+| `QA_ACCESS_KEY` | Optional gate for `/qa` |
+
+### Run locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). Allow microphone access when starting a voice session.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Database and Edge Functions
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+supabase link --project-ref <your-project-ref>
+supabase db push
+supabase functions deploy check-availability --no-verify-jwt
+# … deploy remaining functions (see docs/DEPLOYMENT.md)
+```
 
-## Learn More
+## Project structure
 
-To learn more about Next.js, take a look at the following resources:
+| Path | Description |
+| --- | --- |
+| `app/` | Next.js App Router pages and API routes |
+| `features/voice-agent/` | Retell widget, session hook, tool schemas, guest form |
+| `features/booking/`, `loyalty/`, `gear/`, `waitlist/` | Realtime status UI |
+| `supabase/functions/` | Edge Functions called by Retell tools |
+| `supabase/migrations/` | Database schema and seed data |
+| `docs/` | Agent config, deployment, n8n, compliance, QA |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Documentation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — Vercel, Supabase, Retell, n8n setup
+- [`docs/AGENT_CONFIG.md`](docs/AGENT_CONFIG.md) — System prompt and tool mapping
+- [`docs/N8N_WORKFLOW.md`](docs/N8N_WORKFLOW.md) — Email webhooks and templates
+- [`docs/n8n-email-code.js`](docs/n8n-email-code.js) — Paste into n8n Code node
+- [`docs/COMPLIANCE.md`](docs/COMPLIANCE.md) — GDPR and recording notices
+- [`docs/QA_METRICS.md`](docs/QA_METRICS.md) — QA dashboard metrics
 
-## Deploy on Vercel
+## Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run dev      # local development
+npm run build    # production build
+npm run start    # run production build
+npm run lint     # ESLint
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+Private POC. All rights reserved unless otherwise specified.
