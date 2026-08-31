@@ -8,6 +8,10 @@ import {
   type GuestDetailFocus,
   type GuestDetails,
 } from "./guestDetailsCopy";
+import {
+  canShareGuestDetails,
+  normalizeGuestDetails,
+} from "./normalizeGuestDetails";
 
 type GuestDetailsFormProps = {
   focus: GuestDetailFocus;
@@ -59,9 +63,11 @@ export function GuestDetailsForm({
           ? copy.promptName
           : copy.toggleHint;
 
-  const canShare = requireBoth
-    ? guestName.trim().length >= 2 && guestEmail.trim().includes("@")
-    : guestName.trim().length >= 2 || guestEmail.trim().includes("@");
+  const canShare = canShareGuestDetails(guestName, guestEmail, requireBoth);
+
+  const hasTypedSomething =
+    guestName.trim().length > 0 || guestEmail.trim().length > 0;
+  const showShareHint = hasTypedSomething && !canShare && !disabled && !isSharing;
 
   const updateDetails = (next: Partial<GuestDetails>) => {
     onChange({
@@ -74,10 +80,7 @@ export function GuestDetailsForm({
     if (!canShare || disabled || isSharing) {
       return;
     }
-    const details = {
-      guestName: guestName.trim(),
-      guestEmail: guestEmail.trim().toLowerCase(),
-    };
+    const details = normalizeGuestDetails(guestName, guestEmail);
     await onShare(details);
     setSharedHint(true);
     window.setTimeout(() => setSharedHint(false), 4000);
@@ -174,13 +177,19 @@ export function GuestDetailsForm({
 
           <Button
             type="button"
-            variant="outline"
+            variant={canShare && !disabled && !isSharing ? "primary" : "outline"}
             className="w-full font-medium"
             disabled={!canShare || disabled || isSharing}
             onClick={() => void handleShare()}
           >
             {isSharing ? copy.sharing : copy.share}
           </Button>
+
+          {showShareHint ? (
+            <p className="text-caption leading-relaxed text-graphite" role="status">
+              {copy.shareBlockedHint}
+            </p>
+          ) : null}
 
           {sharedHint ? (
             <p className="text-caption text-ice-deep">{copy.savedHint}</p>

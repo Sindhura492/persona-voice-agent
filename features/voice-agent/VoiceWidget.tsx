@@ -79,7 +79,16 @@ export function VoiceWidget({
           <p className="mt-sm text-small leading-relaxed text-graphite">
             {widgetConfig.micDisclosures[locale]}
           </p>
+          <p className="mt-sm text-small leading-relaxed text-graphite">
+            {widgetConfig.formDisclosures[locale]}
+          </p>
         </div>
+      ) : null}
+
+      {isActive ? (
+        <p className="w-full text-left text-caption leading-relaxed text-graphite">
+          {widgetConfig.formDisclosures[locale]}
+        </p>
       ) : null}
 
       {!awaitingConsent ? (

@@ -17,6 +17,17 @@ export const MIC_DISCLOSURES: Record<Locale, string> = {
   de: MIC_DISCLOSURE_DE,
 };
 
+export const FORM_DISCLOSURE_EN =
+  "You can type your name and email in the form below now, or anytime during the call when the concierge asks. Tap Share with concierge when ready." as const;
+
+export const FORM_DISCLOSURE_DE =
+  "Sie können Name und E-Mail jetzt im Formular unten eingeben oder jederzeit während des Gesprächs, wenn der Concierge danach fragt. Tippen Sie dann auf An Concierge senden." as const;
+
+export const FORM_DISCLOSURES: Record<Locale, string> = {
+  en: FORM_DISCLOSURE_EN,
+  de: FORM_DISCLOSURE_DE,
+};
+
 export const GDPR_DISCLOSURES: Record<Locale, string> = {
   en: GDPR_DISCLOSURE_EN,
   de: GDPR_DISCLOSURE_DE,

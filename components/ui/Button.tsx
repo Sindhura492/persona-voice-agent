@@ -29,7 +29,7 @@ const VARIANT_CLASS: Record<ButtonVariant, string> = {
 };
 
 const BASE_CLASS =
-  "inline-block px-2xl py-lg text-small font-medium uppercase tracking-[0.16em]";
+  "inline-block cursor-pointer px-2xl py-lg text-small font-medium uppercase tracking-[0.16em] disabled:cursor-not-allowed disabled:opacity-50";
 
 export function Button(props: ButtonProps) {
   const variant = props.variant ?? "primary";

@@ -1,5 +1,9 @@
 import { env } from "@/lib/env";
-import { GDPR_DISCLOSURES, MIC_DISCLOSURES } from "@/features/locale/disclosures";
+import {
+  FORM_DISCLOSURES,
+  GDPR_DISCLOSURES,
+  MIC_DISCLOSURES,
+} from "@/features/locale/disclosures";
 import { skiVoiceTools } from "./toolSchemas";
 
 export const AGENT_CONFIG_PATH = "docs/AGENT_CONFIG.md" as const;
@@ -43,6 +47,7 @@ export const widgetConfig = {
   systemPromptPath: AGENT_CONFIG_PATH,
   gdprDisclosures: GDPR_DISCLOSURES,
   micDisclosures: MIC_DISCLOSURES,
+  formDisclosures: FORM_DISCLOSURES,
   conciergeLabel: CONCIERGE_LABEL,
   ctaLabel: CTA_LABEL,
   consentCtaLabel: CONSENT_CTA_LABEL,
