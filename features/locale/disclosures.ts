@@ -6,26 +6,15 @@ export const GDPR_DISCLOSURE_EN =
 export const GDPR_DISCLOSURE_DE =
   "Bevor Sie beginnen, weisen wir Sie darauf hin: Dieses Gespräch kann zu Qualitäts- und Buchungszwecken aufgezeichnet und transkribiert werden. Gesundheitsbezogene Angaben, die Sie uns mitteilen, etwa für die Ausrüstungsanprobe oder aus Sicherheitsgründen, behandeln wir gemäß unserer Datenschutzrichtlinie." as const;
 
-export const MIC_DISCLOSURE_EN =
-  "When you start the call, your browser will ask for microphone access. Choose Allow so the concierge can hear you." as const;
+export const PRE_CALL_DISCLOSURE_EN =
+  "Calls may be recorded. Allow your microphone when asked. Type name and email below now or later, then Share." as const;
 
-export const MIC_DISCLOSURE_DE =
-  "Beim Start des Anrufs fragt Ihr Browser nach Mikrofonzugriff. Bitte wählen Sie Erlauben, damit der Concierge Sie hören kann." as const;
+export const PRE_CALL_DISCLOSURE_DE =
+  "Gespräch kann aufgezeichnet werden. Mikrofon erlauben. Name und E-Mail unten eingeben (jetzt oder später), dann Senden." as const;
 
-export const MIC_DISCLOSURES: Record<Locale, string> = {
-  en: MIC_DISCLOSURE_EN,
-  de: MIC_DISCLOSURE_DE,
-};
-
-export const FORM_DISCLOSURE_EN =
-  "You can type your name and email in the form below now, or anytime during the call when the concierge asks. Tap Share with concierge when ready." as const;
-
-export const FORM_DISCLOSURE_DE =
-  "Sie können Name und E-Mail jetzt im Formular unten eingeben oder jederzeit während des Gesprächs, wenn der Concierge danach fragt. Tippen Sie dann auf An Concierge senden." as const;
-
-export const FORM_DISCLOSURES: Record<Locale, string> = {
-  en: FORM_DISCLOSURE_EN,
-  de: FORM_DISCLOSURE_DE,
+export const PRE_CALL_DISCLOSURES: Record<Locale, string> = {
+  en: PRE_CALL_DISCLOSURE_EN,
+  de: PRE_CALL_DISCLOSURE_DE,
 };
 
 export const GDPR_DISCLOSURES: Record<Locale, string> = {

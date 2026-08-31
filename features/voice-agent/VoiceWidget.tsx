@@ -15,8 +15,8 @@ const END_LABEL = {
 } as const;
 
 const CONSENT_HEADING = {
-  en: "Recording & data notice",
-  de: "Hinweis zu Aufzeichnung & Daten",
+  en: "Before you call",
+  de: "Vor dem Anruf",
 } as const;
 
 type VoiceWidgetProps = {
@@ -74,21 +74,9 @@ export function VoiceWidget({
             {CONSENT_HEADING[locale]}
           </p>
           <p className="mt-sm text-small leading-relaxed text-charcoal">
-            {widgetConfig.gdprDisclosures[locale]}
-          </p>
-          <p className="mt-sm text-small leading-relaxed text-graphite">
-            {widgetConfig.micDisclosures[locale]}
-          </p>
-          <p className="mt-sm text-small leading-relaxed text-graphite">
-            {widgetConfig.formDisclosures[locale]}
+            {widgetConfig.preCallDisclosures[locale]}
           </p>
         </div>
-      ) : null}
-
-      {isActive ? (
-        <p className="w-full text-left text-caption leading-relaxed text-graphite">
-          {widgetConfig.formDisclosures[locale]}
-        </p>
       ) : null}
 
       {!awaitingConsent ? (

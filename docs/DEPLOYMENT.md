@@ -15,8 +15,7 @@
 | --- | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Public | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public | Browser Supabase client |
-| `NEXT_PUBLIC_RETELL_AGENT_ID` | Public | Single Snowveil Retell agent id |
-| `NEXT_PUBLIC_RETELL_PUBLIC_KEY` | Public | Retell public key for the web widget |
+| `NEXT_PUBLIC_RETELL_AGENT_ID` | Public | Snowveil Retell agent id |
 
 ### Server-only (not in `lib/env.ts`)
 
@@ -79,12 +78,10 @@ Store n8n production webhook URLs in n8n only, not in the repo.
 1. Import the Git repository (Framework Preset: **Next.js**).
 2. Add all environment variables from the checklists above.
 3. Deploy production (and preview if desired).
-4. In Retell → **Settings → Public keys** → your key → **Allowed domains**, add:
-   - `snowveil-agent.vercel.app` (no `https://`)
-   - `localhost` (for local dev)
-   - Any custom domain or `*.vercel.app` preview host you test on
-5. Confirm `POST /api/retell/web-call` returns an `accessToken` when `RETELL_API_KEY` is set.
-6. **Redeploy** after changing any `NEXT_PUBLIC_*` variable (they are baked in at build time).
+4. Confirm `POST /api/retell/web-call` returns an `accessToken` when `RETELL_API_KEY` is set.
+5. **Redeploy** after changing any `NEXT_PUBLIC_*` variable (they are baked in at build time).
+
+**Note:** This app does **not** need `NEXT_PUBLIC_RETELL_PUBLIC_KEY`. Web voice uses a server-side `RETELL_API_KEY` to mint short-lived call tokens. Retell **Public keys** in the dashboard are only for Retell’s embedded chat widget, not this codebase.
 
 ### Voice works on localhost but not on Vercel
 
@@ -93,7 +90,7 @@ This is almost always **microphone permission per site**, not a broken API. Chro
 1. Open the production URL → start a call → when the browser asks, choose **Allow microphone**.
 2. If you already blocked it: address bar **lock icon** → **Microphone** → **Allow** → hard refresh → try again.
 3. macOS: **System Settings → Privacy & Security → Microphone** → enable your browser.
-4. Retell **Allowed domains** must include your exact Vercel hostname (step 4 above).
+4. Retell agent and tools are configured; microphone must be allowed for your site in the browser.
 5. Verify the server route: `curl -X POST https://<your-domain>/api/retell/web-call -H "Content-Type: application/json" -d '{"agentId":"<id>"}'` should return `accessToken` (not `RETELL_API_KEY is not configured`).
 
 ## Post-deploy checks

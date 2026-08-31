@@ -28,41 +28,35 @@ export const GUEST_DETAILS_COPY: Record<
 > = {
   en: {
     toggle: "Prefer to type?",
-    toggleHint:
-      "Type here anytime during the call. No need to spell aloud. Tap Share when ready.",
+    toggleHint: "Optional. Share when ready.",
     nameLabel: "Full name",
     namePlaceholder: "Your full name",
     emailLabel: "Email address",
     emailPlaceholder: "you@example.com",
     share: "Share with concierge",
     sharing: "Sharing…",
-    promptName: "Type your name below, then tap Share.",
-    promptEmail: "Type your email below, then tap Share.",
-    promptBoth: "Type your name and email below, then tap Share.",
-    savedHint: "Sent to concierge. They'll use your typed details.",
-    bookingRequired:
-      "For your booking we need your full name and email. Please type both below.",
-    shareBlockedHint:
-      "Enter your full name and a valid email (with @), each in the matching field, then tap Share.",
+    promptName: "Your name, then Share.",
+    promptEmail: "Your email, then Share.",
+    promptBoth: "Name and email, then Share.",
+    savedHint: "Shared with concierge.",
+    bookingRequired: "Full name and email required.",
+    shareBlockedHint: "Use the correct fields and a valid email.",
   },
   de: {
     toggle: "Lieber tippen?",
-    toggleHint:
-      "Jederzeit während des Gesprächs tippen. Kein Buchstabieren nötig. Dann auf Senden tippen.",
+    toggleHint: "Optional. Dann Senden tippen.",
     nameLabel: "Vollständiger Name",
     namePlaceholder: "Ihr vollständiger Name",
     emailLabel: "E-Mail-Adresse",
     emailPlaceholder: "sie@beispiel.de",
     share: "An Concierge senden",
     sharing: "Wird gesendet…",
-    promptName: "Name unten eingeben, dann Senden tippen.",
-    promptEmail: "E-Mail unten eingeben, dann Senden tippen.",
-    promptBoth: "Name und E-Mail unten eingeben, dann Senden tippen.",
-    savedHint: "An Concierge gesendet. Ihre eingegebenen Daten werden verwendet.",
-    bookingRequired:
-      "Für die Buchung benötigen wir Ihren vollständigen Namen und Ihre E-Mail. Bitte beides unten eingeben.",
-    shareBlockedHint:
-      "Bitte vollständigen Namen und gültige E-Mail (mit @) in die passenden Felder eintragen, dann Senden tippen.",
+    promptName: "Name, dann Senden.",
+    promptEmail: "E-Mail, dann Senden.",
+    promptBoth: "Name und E-Mail, dann Senden.",
+    savedHint: "An Concierge gesendet.",
+    bookingRequired: "Name und E-Mail erforderlich.",
+    shareBlockedHint: "Richtige Felder und gültige E-Mail verwenden.",
   },
 };
 

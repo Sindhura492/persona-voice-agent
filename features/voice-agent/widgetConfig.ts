@@ -1,9 +1,5 @@
 import { env } from "@/lib/env";
-import {
-  FORM_DISCLOSURES,
-  GDPR_DISCLOSURES,
-  MIC_DISCLOSURES,
-} from "@/features/locale/disclosures";
+import { PRE_CALL_DISCLOSURES } from "@/features/locale/disclosures";
 import { skiVoiceTools } from "./toolSchemas";
 
 export const AGENT_CONFIG_PATH = "docs/AGENT_CONFIG.md" as const;
@@ -16,8 +12,8 @@ export const CTA_LABEL = {
 } as const;
 
 export const CONSENT_CTA_LABEL = {
-  en: "Allow microphone & start call",
-  de: "Mikrofon erlauben & Anruf starten",
+  en: "Start call",
+  de: "Anruf starten",
 } as const;
 
 /** Retell custom tool → Supabase Edge Function slug. */
@@ -40,14 +36,9 @@ export const widgetConfig = {
   get agentId() {
     return env.NEXT_PUBLIC_RETELL_AGENT_ID;
   },
-  get publicKey() {
-    return env.NEXT_PUBLIC_RETELL_PUBLIC_KEY;
-  },
   createWebCallPath: "/api/retell/web-call",
   systemPromptPath: AGENT_CONFIG_PATH,
-  gdprDisclosures: GDPR_DISCLOSURES,
-  micDisclosures: MIC_DISCLOSURES,
-  formDisclosures: FORM_DISCLOSURES,
+  preCallDisclosures: PRE_CALL_DISCLOSURES,
   conciergeLabel: CONCIERGE_LABEL,
   ctaLabel: CTA_LABEL,
   consentCtaLabel: CONSENT_CTA_LABEL,

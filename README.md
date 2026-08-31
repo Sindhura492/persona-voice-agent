@@ -60,7 +60,6 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Browser Supabase client |
 | `NEXT_PUBLIC_RETELL_AGENT_ID` | Retell agent ID |
-| `NEXT_PUBLIC_RETELL_PUBLIC_KEY` | Retell public key for web calls |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server-side Supabase (never expose to client) |
 | `RETELL_API_KEY` | Server-side web call tokens + live call sync |
 | `QA_ACCESS_KEY` | Optional gate for `/qa` |

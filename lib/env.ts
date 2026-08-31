@@ -2,7 +2,6 @@ type PublicEnv = Readonly<{
   NEXT_PUBLIC_SUPABASE_URL: string;
   NEXT_PUBLIC_SUPABASE_ANON_KEY: string;
   NEXT_PUBLIC_RETELL_AGENT_ID: string;
-  NEXT_PUBLIC_RETELL_PUBLIC_KEY: string;
 }>;
 
 type Env = PublicEnv;
@@ -33,10 +32,6 @@ function readPublicEnv(): PublicEnv {
       "NEXT_PUBLIC_RETELL_AGENT_ID",
       process.env.NEXT_PUBLIC_RETELL_AGENT_ID,
     ),
-    NEXT_PUBLIC_RETELL_PUBLIC_KEY: readRequiredPublic(
-      "NEXT_PUBLIC_RETELL_PUBLIC_KEY",
-      process.env.NEXT_PUBLIC_RETELL_PUBLIC_KEY,
-    ),
   };
 }
 
@@ -58,8 +53,5 @@ export const env: Env = {
   },
   get NEXT_PUBLIC_RETELL_AGENT_ID() {
     return getPublicEnv().NEXT_PUBLIC_RETELL_AGENT_ID;
-  },
-  get NEXT_PUBLIC_RETELL_PUBLIC_KEY() {
-    return getPublicEnv().NEXT_PUBLIC_RETELL_PUBLIC_KEY;
   },
 };

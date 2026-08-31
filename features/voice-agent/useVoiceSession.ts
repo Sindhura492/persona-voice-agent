@@ -341,7 +341,20 @@ export function useVoiceSession() {
       });
 
       if (!response.ok) {
-        throw new Error("Unable to start voice session");
+        let message = "Unable to start voice session";
+        try {
+          const errorBody: unknown = await response.json();
+          if (
+            isRecord(errorBody) &&
+            typeof errorBody.error === "string" &&
+            errorBody.error.trim()
+          ) {
+            message = errorBody.error.trim();
+          }
+        } catch {
+          // Keep default message when the body is not JSON.
+        }
+        throw new Error(message);
       }
 
       const payload = parseWebCallPayload(await response.json());
