@@ -212,14 +212,15 @@ Deno.serve(async (request: Request): Promise<Response> => {
       : "";
 
     const earnLine = loyaltyEnrollment?.points_earned
-      ? ` They earned ${loyaltyEnrollment.points_earned} ${PROGRAM_NAME} points this stay (${loyaltyEnrollment.earn_rule}). New balance: ${loyaltyEnrollment.points_balance}.`
+      ? ` They EARNED ${loyaltyEnrollment.points_earned} ${PROGRAM_NAME} points this stay (${loyaltyEnrollment.earn_rule}). New balance: ${loyaltyEnrollment.points_balance}. Say "earned", never "applied" or "redeemed".`
       : "";
 
     const guidanceCore = loyaltyPointsRedeemed > 0
-      ? `Confirm subtotal EUR ${estimatedTotal}, discount EUR ${loyaltyDiscountEur} (${loyaltyPointsRedeemed} pts), and total EUR ${finalTotal}.`
-      : loyaltyEnrollment?.welcome_bonus
-        ? `Announce ${WELCOME_BONUS_POINTS} welcome ${PROGRAM_NAME} points plus earn from this booking.`
-        : `Confirm the booking.`;
+      ? `REDEEMED ${loyaltyPointsRedeemed} pts for EUR ${loyaltyDiscountEur} off. Confirm subtotal EUR ${estimatedTotal}, discount EUR ${loyaltyDiscountEur}, total EUR ${finalTotal}.`
+      : `NO POINTS REDEEMED (loyalty_points_redeemed=0, loyalty_discount_eur=0, total EUR ${finalTotal}). Do NOT say points were applied or redeemed. If the guest previously agreed to redeem, call redeem_loyalty_points now with this booking_id.`;
+    const welcomeLine = loyaltyEnrollment?.welcome_bonus
+      ? ` Also announce ${WELCOME_BONUS_POINTS} welcome ${PROGRAM_NAME} points.`
+      : "";
 
     return jsonResponse(
       {
@@ -237,6 +238,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
         loyalty_discount_eur: loyaltyDiscountEur,
         final_total: finalTotal,
         loyalty_points_redeemed: loyaltyPointsRedeemed,
+        points_were_redeemed: loyaltyPointsRedeemed > 0,
         loyalty_points_earned: loyaltyEnrollment?.points_earned ?? 0,
         loyalty_earn_rule: loyaltyEnrollment?.earn_rule ?? null,
         points_balance: loyaltyEnrollment?.points_balance ?? null,
@@ -256,7 +258,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
               status: existingActive.status,
             }
           : null,
-        agent_guidance: guidanceCore + earnLine + existingNotice,
+        agent_guidance: guidanceCore + welcomeLine + earnLine + existingNotice,
       },
       201,
     );

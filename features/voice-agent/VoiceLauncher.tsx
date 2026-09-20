@@ -99,18 +99,20 @@ export function VoiceLauncher() {
             <p className="text-center text-small font-semibold text-ice-deep">
               {voiceStateLabel(session.state, locale)}
             </p>
-            <GuestDetailsForm
-              focus={isActive ? session.detailFocus : null}
-              forceOpen
-              expanded
-              requireBoth={session.bookingIntent}
-              guestName={session.guestDetails.guestName}
-              guestEmail={session.guestDetails.guestEmail}
-              disabled={isStarting || session.isSharingDetails}
-              isSharing={session.isSharingDetails}
-              onChange={session.setGuestDetails}
-              onShare={session.shareGuestDetails}
-            />
+            {inCall ? (
+              <GuestDetailsForm
+                focus={isActive ? session.detailFocus : null}
+                forceOpen
+                expanded
+                requireBoth={session.bookingIntent}
+                guestName={session.guestDetails.guestName}
+                guestEmail={session.guestDetails.guestEmail}
+                disabled={isStarting || session.isSharingDetails}
+                isSharing={session.isSharingDetails}
+                onChange={session.setGuestDetails}
+                onShare={session.shareGuestDetails}
+              />
+            ) : null}
           </div>
         }
         stickyFooter={

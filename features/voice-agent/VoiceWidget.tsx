@@ -103,11 +103,11 @@ export function VoiceWidget({
         </p>
       ) : null}
 
-      {!hideGuestForm ? (
+      {!hideGuestForm && (isActive || isStarting) ? (
         <GuestDetailsForm
           key={isActive ? "call-active" : "call-idle"}
           focus={isActive ? detailFocus : null}
-          expanded={isActive || awaitingConsent}
+          expanded={isActive || isStarting}
           requireBoth={bookingIntent}
           guestName={session.guestDetails.guestName}
           guestEmail={session.guestDetails.guestEmail}

@@ -7,10 +7,10 @@ export const GDPR_DISCLOSURE_DE =
   "Bevor Sie beginnen, weisen wir Sie darauf hin: Dieses Gespräch kann zu Qualitäts- und Buchungszwecken aufgezeichnet und transkribiert werden. Gesundheitsbezogene Angaben, die Sie uns mitteilen, etwa für die Ausrüstungsanprobe oder aus Sicherheitsgründen, behandeln wir gemäß unserer Datenschutzrichtlinie." as const;
 
 export const PRE_CALL_DISCLOSURE_EN =
-  "Calls may be recorded. Allow your microphone when asked. Type name and email below now or later, then Share." as const;
+  "Calls may be recorded. Allow your microphone when asked. After the call starts, you can type your name and email if the concierge asks." as const;
 
 export const PRE_CALL_DISCLOSURE_DE =
-  "Gespräch kann aufgezeichnet werden. Mikrofon erlauben. Name und E-Mail unten eingeben (jetzt oder später), dann Senden." as const;
+  "Gespräch kann aufgezeichnet werden. Mikrofon erlauben. Nach Gesprächsstart können Sie Name und E-Mail tippen, wenn der Concierge danach fragt." as const;
 
 export const PRE_CALL_DISCLOSURES: Record<Locale, string> = {
   en: PRE_CALL_DISCLOSURE_EN,

@@ -19,26 +19,26 @@ export const REDEMPTION_TIERS: readonly RedemptionTier[] = [
   {
     points: 200,
     discount_eur: 10,
-    label: "EUR 10 resort credit",
-    description: "Dining, retail, or spa at Snowveil village",
+    label: "EUR 10 stay discount",
+    description: "Applied as EUR 10 off the booking bill",
   },
   {
     points: 500,
     discount_eur: 25,
-    label: "EUR 25 lift pass credit",
-    description: "Applied to your next lift pass purchase",
+    label: "EUR 25 lift pass discount",
+    description: "Applied as EUR 25 off the booking bill when a lift pass is included, or as stay credit",
   },
   {
     points: 1000,
     discount_eur: 60,
-    label: "EUR 60 dining credit",
-    description: "Valid at mountain restaurants",
+    label: "EUR 60 dining discount",
+    description: "Applied as EUR 60 off the booking bill",
   },
   {
     points: 2000,
     discount_eur: 150,
-    label: "EUR 150 room upgrade",
-    description: "Subject to availability at check-in",
+    label: "EUR 150 upgrade discount",
+    description: "Applied as EUR 150 off the booking bill toward a room upgrade",
   },
 ] as const;
 

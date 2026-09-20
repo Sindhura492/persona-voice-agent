@@ -51,7 +51,7 @@ export const checkAvailabilityTool: ToolSchema = {
 export const createBookingTool: ToolSchema = {
   name: "create_booking",
   description:
-    "Create a pending booking after availability looks good. Before calling: lookup_booking to note any existing active stay (inform only, never block); lookup_loyalty_balance and advise redeemable points; on guest yes pass loyalty_points_redeemed. Read back details and wait for confirmation.",
+    "Create a pending booking. If guest agreed to redeem Summit Circle points, you MUST pass loyalty_points_redeemed (200/500/1000/2000). Omitting it books full price with no discount. After the tool returns: only say points were applied if loyalty_points_redeemed > 0. loyalty_points_earned means points gained from the stay — never call that 'applied' or 'redeemed'. If guest said yes to redeem but response shows loyalty_points_redeemed=0, immediately call redeem_loyalty_points with booking_id.",
   parameters: {
     type: "object",
     properties: {
@@ -69,7 +69,7 @@ export const createBookingTool: ToolSchema = {
       loyalty_points_redeemed: {
         type: "number",
         description:
-          "Summit Circle points to redeem on this booking (optional). Shows subtotal, discount, and total after in confirmation email.",
+          "REQUIRED when guest said yes to redeem: pass exact tier points 200, 500, 1000, or 2000. Pass 0 or omit only if they declined. This is spend/redeem — not earn.",
       },
     },
     required: [

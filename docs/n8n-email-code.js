@@ -1,9 +1,53 @@
 // Paste into n8n → Code in JavaScript node (replaces existing code).
 // Handles: plan_brochure, loyalty_brochure, loyalty_redeemed, booking_bill_updated, gear_fitting_confirmed,
 // waitlist_joined, booking_received, booking_confirmed, booking_cancelled, booking_rescheduled
+//
+// Gmail "To" must be: {{ $json.to }}
+// Add IF before Gmail: {{ $json.skip }} is not equal to true
 
 const raw = $input.first().json;
-const body = raw.body ?? raw;
+
+function unwrapBody(input) {
+  let cur = input;
+  for (let i = 0; i < 4; i++) {
+    if (typeof cur === 'string') {
+      try {
+        cur = JSON.parse(cur);
+        continue;
+      } catch {
+        break;
+      }
+    }
+    if (cur && typeof cur === 'object' && cur.body != null && typeof cur.event !== 'string' && typeof cur.type !== 'string') {
+      cur = cur.body;
+      continue;
+    }
+    break;
+  }
+  return cur && typeof cur === 'object' ? cur : {};
+}
+
+const body = unwrapBody(raw);
+
+function resolveEmail(...candidates) {
+  for (const value of candidates) {
+    if (value == null) continue;
+    const text = String(value).trim();
+    if (!text) continue;
+    const angle = text.match(/<([^>]+@[^>]+)>/);
+    const candidate = (angle ? angle[1] : text).trim().toLowerCase();
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(candidate)) return candidate;
+  }
+  return '';
+}
+
+function emailOut(payload) {
+  const to = resolveEmail(payload.to, body.to, body.contact, body.email, body.guest_email, body.record?.contact);
+  if (!to) {
+    return [{ json: { ...payload, to: '', skip: true, skip_reason: 'missing_or_invalid_email' } }];
+  }
+  return [{ json: { ...payload, to, email: to, skip: false } }];
+}
 
 function emailShell(title, badge, badgeColor, innerHtml) {
   return `
@@ -75,7 +119,7 @@ if (body.event === 'plan_brochure' || body.type === 'PLAN_BROCHURE') {
      <p style="color:#445;line-height:1.5;">Here are our packages, inclusions, and EUR pricing.</p>
      ${plansHtml}${availabilityHtml}${loyaltyHtml}`,
   );
-  return [{ json: { event: 'plan_brochure', to: body.to || body.contact, subject: 'Snowveil: plans & EUR pricing', html, guestName } }];
+  return emailOut({ event: 'plan_brochure', subject: 'Snowveil: plans & EUR pricing', html, guestName });
 }
 
 // --- Loyalty brochure (send_loyalty_details) ---
@@ -105,7 +149,7 @@ if (body.event === 'loyalty_brochure' || body.type === 'LOYALTY_BROCHURE') {
      <table style="width:100%;border-collapse:collapse;font-size:14px;">${tierRows}</table>
      <p style="margin-top:16px;color:#667;font-size:12px;">Redeem anytime through the voice concierge. Credits apply to your stay or on-mountain services.</p>`,
   );
-  return [{ json: { event: 'loyalty_brochure', to: body.to || body.contact, subject: 'Snowveil: Summit Circle rewards & discounts', html, guestName } }];
+  return emailOut({ event: 'loyalty_brochure', subject: 'Snowveil: Summit Circle rewards & discounts', html, guestName });
 }
 
 // --- Loyalty redeemed (redeem_loyalty_points, no booking bill) ---
@@ -124,7 +168,7 @@ if (body.event === 'loyalty_redeemed' || body.type === 'LOYALTY_REDEEMED') {
      </table>
      <p style="margin-top:16px;color:#667;font-size:13px;">${body.discount_description || 'Credit will be applied to your account for your next eligible purchase.'}</p>`,
   );
-  return [{ json: { event: 'loyalty_redeemed', to: body.to || body.contact, subject: 'Snowveil: Summit Circle redemption confirmed', html, guestName } }];
+  return emailOut({ event: 'loyalty_redeemed', subject: 'Snowveil: Summit Circle redemption confirmed', html, guestName });
 }
 
 // --- Updated booking bill after loyalty discount on a stay ---
@@ -158,7 +202,7 @@ if (body.event === 'booking_bill_updated' || body.type === 'BOOKING_BILL_UPDATED
      </table>
      <p style="margin-top:16px;color:#667;font-size:13px;">Remaining Summit Circle balance: ${body.points_balance ?? '—'} pts.</p>`,
   );
-  return [{ json: { event: 'booking_bill_updated', to: body.to || body.contact || record.contact, subject: 'Snowveil: updated bill after discount', html, guestName } }];
+  return emailOut({ event: 'booking_bill_updated', to: record.contact, subject: 'Snowveil: updated bill after discount', html, guestName });
 }
 
 // --- Gear fitting confirmed (submit_gear_fitting) ---
@@ -199,7 +243,7 @@ if (body.event === 'gear_fitting_confirmed' || body.type === 'GEAR_FITTING_CONFI
        Heated ski lockers are complimentary overnight. Boot dryers and a tuning bench are available in the gear atelier until 9:00 PM.
      </div>`,
   );
-  return [{ json: { event: 'gear_fitting_confirmed', to: body.to || body.contact, subject: 'Snowveil: gear fitting confirmed', html, guestName } }];
+  return emailOut({ event: 'gear_fitting_confirmed', subject: 'Snowveil: gear fitting confirmed', html, guestName });
 }
 
 // --- Waitlist joined (join_waitlist) ---
@@ -225,7 +269,7 @@ if (body.event === 'waitlist_joined' || body.type === 'WAITLIST_JOINED') {
      </table>
      <p style="margin-top:16px;color:#667;font-size:13px;">Reference: ${body.waitlist_id || ''}</p>`,
   );
-  return [{ json: { event: 'waitlist_joined', to: body.to || body.contact, subject: 'Snowveil: waitlist confirmation', html, guestName } }];
+  return emailOut({ event: 'waitlist_joined', subject: 'Snowveil: waitlist confirmation', html, guestName });
 }
 
 function buildBookingPricingRows(record, catalogTotal) {
@@ -338,7 +382,7 @@ if (event === 'booking_received') {
      <p style="color:#445;line-height:1.5;">Your stay dates have been updated.</p>${detailsTable}`,
   );
 } else {
-  return [{ json: { event: 'ignore', to: '', subject: '', html: '' } }];
+  return [{ json: { event: 'ignore', to: '', subject: '', html: '', skip: true, skip_reason: 'ignored_event' } }];
 }
 
-return [{ json: { event, to: isEmail ? contact : '', subject, html, guestName } }];
+return emailOut({ event, to: isEmail ? contact : '', subject, html, guestName });
