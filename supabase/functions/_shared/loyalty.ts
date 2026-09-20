@@ -3,6 +3,10 @@ import { normalizeContact } from "./validateCommon.ts";
 
 export const WELCOME_BONUS_POINTS = 200;
 export const PROGRAM_NAME = "Summit Circle";
+/** Marketing earn rate: 1 Summit Circle point per EUR 1 of stay subtotal. */
+export const EARN_POINTS_PER_EUR = 1;
+export const EARN_LIFT_BONUS_POINTS = 25;
+export const EARN_LESSONS_BONUS_POINTS = 25;
 
 export type RedemptionTier = {
   points: number;
@@ -78,6 +82,75 @@ export function discountForPoints(points: number): {
         ? "Proportional credit at EUR 1 per 20 points redeemed"
         : null,
   };
+}
+
+export function pointsEarnedForBooking(input: {
+  estimated_total_eur: number;
+  lift_pass_included: boolean;
+  lessons_included: boolean;
+}): {
+  points: number;
+  base_points: number;
+  lift_bonus: number;
+  lessons_bonus: number;
+  rule_summary: string;
+} {
+  const base_points = Math.max(
+    0,
+    Math.floor(Number(input.estimated_total_eur) || 0) * EARN_POINTS_PER_EUR,
+  );
+  const lift_bonus = input.lift_pass_included ? EARN_LIFT_BONUS_POINTS : 0;
+  const lessons_bonus = input.lessons_included ? EARN_LESSONS_BONUS_POINTS : 0;
+  const points = base_points + lift_bonus + lessons_bonus;
+
+  const parts = [`${base_points} pts from stay (1 pt / EUR)`];
+  if (lift_bonus > 0) {
+    parts.push(`+${lift_bonus} lift bonus`);
+  }
+  if (lessons_bonus > 0) {
+    parts.push(`+${lessons_bonus} lessons bonus`);
+  }
+
+  return {
+    points,
+    base_points,
+    lift_bonus,
+    lessons_bonus,
+    rule_summary: parts.join(" "),
+  };
+}
+
+export async function awardLoyaltyPoints(
+  supabase: SupabaseClient,
+  accountId: string,
+  points: number,
+): Promise<LoyaltyAccountRow | null> {
+  if (points <= 0) {
+    return null;
+  }
+
+  const { data: current, error: readError } = await supabase
+    .from("loyalty_accounts")
+    .select(LOYALTY_COLUMNS)
+    .eq("id", accountId)
+    .single();
+
+  if (readError || !current) {
+    return null;
+  }
+
+  const account = current as LoyaltyAccountRow;
+  const { data, error } = await supabase
+    .from("loyalty_accounts")
+    .update({ points_balance: account.points_balance + points })
+    .eq("id", accountId)
+    .select(LOYALTY_COLUMNS)
+    .single();
+
+  if (error || !data) {
+    return null;
+  }
+  return data as LoyaltyAccountRow;
 }
 
 export function availableRedemptions(balance: number): RedemptionTier[] {

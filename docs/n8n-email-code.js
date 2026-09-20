@@ -1,6 +1,6 @@
 // Paste into n8n → Code in JavaScript node (replaces existing code).
-// Handles: plan_brochure, loyalty_brochure, loyalty_redeemed, gear_fitting_confirmed,
-// booking_received, booking_confirmed, booking_cancelled, booking_rescheduled
+// Handles: plan_brochure, loyalty_brochure, loyalty_redeemed, booking_bill_updated, gear_fitting_confirmed,
+// waitlist_joined, booking_received, booking_confirmed, booking_cancelled, booking_rescheduled
 
 const raw = $input.first().json;
 const body = raw.body ?? raw;
@@ -108,7 +108,7 @@ if (body.event === 'loyalty_brochure' || body.type === 'LOYALTY_BROCHURE') {
   return [{ json: { event: 'loyalty_brochure', to: body.to || body.contact, subject: 'Snowveil: Summit Circle rewards & discounts', html, guestName } }];
 }
 
-// --- Loyalty redeemed (redeem_loyalty_points) ---
+// --- Loyalty redeemed (redeem_loyalty_points, no booking bill) ---
 if (body.event === 'loyalty_redeemed' || body.type === 'LOYALTY_REDEEMED') {
   const guestName = body.guestName || body.guest_name || 'Guest';
   const html = emailShell(
@@ -125,6 +125,40 @@ if (body.event === 'loyalty_redeemed' || body.type === 'LOYALTY_REDEEMED') {
      <p style="margin-top:16px;color:#667;font-size:13px;">${body.discount_description || 'Credit will be applied to your account for your next eligible purchase.'}</p>`,
   );
   return [{ json: { event: 'loyalty_redeemed', to: body.to || body.contact, subject: 'Snowveil: Summit Circle redemption confirmed', html, guestName } }];
+}
+
+// --- Updated booking bill after loyalty discount on a stay ---
+if (body.event === 'booking_bill_updated' || body.type === 'BOOKING_BILL_UPDATED') {
+  const record = body.record || {};
+  const guestName = body.guestName || body.guest_name || record.guest_name || 'Guest';
+  const packages = {
+    alpine_escape: 'Alpine Escape',
+    summit_luxury: 'Summit Luxury Chalet',
+    family_adventure: 'Family Adventure',
+    day_pass: 'Day Pass Package',
+  };
+  const packageName = packages[record.package_type] || record.package_type || '';
+  const before = Number(record.estimated_total_eur ?? 0);
+  const discount = Number(record.loyalty_discount_eur ?? body.discount_eur ?? 0);
+  const points = Number(record.loyalty_points_redeemed ?? body.points_redeemed ?? 0);
+  const after = Number(record.final_total_eur ?? Math.max(0, before - discount));
+  const html = emailShell(
+    'Updated bill',
+    '● DISCOUNT APPLIED',
+    'background:#e8f6ef;color:#0f6b4c;',
+    `<h2 style="margin:18px 0 8px;">Hi ${guestName},</h2>
+     <p style="color:#445;line-height:1.5;">Your Summit Circle discount was applied. Here is your updated bill.</p>
+     <table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:16px;">
+       <tr><td style="padding:8px 0;border-bottom:1px solid #eef3f8;color:#667;">Booking ID</td><td style="padding:8px 0;border-bottom:1px solid #eef3f8;text-align:right;font-family:monospace;font-size:12px;">${record.id || ''}</td></tr>
+       <tr><td style="padding:8px 0;border-bottom:1px solid #eef3f8;color:#667;">Package</td><td style="padding:8px 0;border-bottom:1px solid #eef3f8;text-align:right;">${packageName}</td></tr>
+       <tr><td style="padding:8px 0;border-bottom:1px solid #eef3f8;color:#667;">Stay</td><td style="padding:8px 0;border-bottom:1px solid #eef3f8;text-align:right;">${record.arrival_date || ''} → ${record.departure_date || ''}</td></tr>
+       <tr><td style="padding:8px 0;border-bottom:1px solid #eef3f8;color:#667;">Subtotal</td><td style="padding:8px 0;border-bottom:1px solid #eef3f8;text-align:right;font-weight:600;">EUR ${before}</td></tr>
+       <tr><td style="padding:8px 0;border-bottom:1px solid #eef3f8;color:#667;">Summit Circle discount (${points} pts)</td><td style="padding:8px 0;border-bottom:1px solid #eef3f8;text-align:right;font-weight:600;color:#0f6b4c;">− EUR ${discount}</td></tr>
+       <tr><td style="padding:8px 0;color:#667;">Total after discount</td><td style="padding:8px 0;text-align:right;font-weight:700;color:#0b3d5c;">EUR ${after}</td></tr>
+     </table>
+     <p style="margin-top:16px;color:#667;font-size:13px;">Remaining Summit Circle balance: ${body.points_balance ?? '—'} pts.</p>`,
+  );
+  return [{ json: { event: 'booking_bill_updated', to: body.to || body.contact || record.contact, subject: 'Snowveil: updated bill after discount', html, guestName } }];
 }
 
 // --- Gear fitting confirmed (submit_gear_fitting) ---
@@ -166,6 +200,32 @@ if (body.event === 'gear_fitting_confirmed' || body.type === 'GEAR_FITTING_CONFI
      </div>`,
   );
   return [{ json: { event: 'gear_fitting_confirmed', to: body.to || body.contact, subject: 'Snowveil: gear fitting confirmed', html, guestName } }];
+}
+
+// --- Waitlist joined (join_waitlist) ---
+if (body.event === 'waitlist_joined' || body.type === 'WAITLIST_JOINED') {
+  const guestName = body.guestName || body.guest_name || 'Guest';
+  const skillLabels = {
+    beginner: 'Beginner',
+    intermediate: 'Intermediate',
+    advanced: 'Advanced',
+  };
+  const skill = skillLabels[body.lesson_level] || body.lesson_level || '';
+  const html = emailShell(
+    'Waitlist confirmation',
+    '● ON THE LIST',
+    'background:#e8f1ff;color:#1a4d8c;',
+    `<h2 style="margin:18px 0 8px;">Hi ${guestName},</h2>
+     <p style="color:#445;line-height:1.5;">You are on the Snowveil ski school waitlist. We will contact you if a spot opens.</p>
+     <table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:16px;">
+       <tr><td style="padding:8px 0;border-bottom:1px solid #eef3f8;color:#667;">Requested date</td><td style="padding:8px 0;border-bottom:1px solid #eef3f8;text-align:right;font-weight:600;">${body.requested_date || ''}</td></tr>
+       <tr><td style="padding:8px 0;border-bottom:1px solid #eef3f8;color:#667;">Lesson level</td><td style="padding:8px 0;border-bottom:1px solid #eef3f8;text-align:right;font-weight:600;">${skill}</td></tr>
+       <tr><td style="padding:8px 0;border-bottom:1px solid #eef3f8;color:#667;">Queue position</td><td style="padding:8px 0;border-bottom:1px solid #eef3f8;text-align:right;font-weight:700;color:#0b3d5c;">#${body.queue_position ?? '—'}</td></tr>
+       <tr><td style="padding:8px 0;color:#667;">Status</td><td style="padding:8px 0;text-align:right;font-weight:600;">${body.status || 'waiting'}</td></tr>
+     </table>
+     <p style="margin-top:16px;color:#667;font-size:13px;">Reference: ${body.waitlist_id || ''}</p>`,
+  );
+  return [{ json: { event: 'waitlist_joined', to: body.to || body.contact, subject: 'Snowveil: waitlist confirmation', html, guestName } }];
 }
 
 function buildBookingPricingRows(record, catalogTotal) {

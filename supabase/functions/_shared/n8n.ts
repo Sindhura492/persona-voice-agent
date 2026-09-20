@@ -1,5 +1,5 @@
 const DEFAULT_N8N_URL =
-  "https://sindhura.app.n8n.cloud/webhook/persona-automation";
+  "https://snowveil49.app.n8n.cloud/webhook/persona-automation";
 
 export async function postToN8n(payload: Record<string, unknown>): Promise<void> {
   const n8nUrl = Deno.env.get("N8N_WEBHOOK_URL")?.trim() || DEFAULT_N8N_URL;

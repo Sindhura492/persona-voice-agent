@@ -39,21 +39,39 @@ export function parseLiveUtterances(
   return turns;
 }
 
-function aligns(
-  existing: TranscriptTurn,
+function sameUtterance(
+  existing: { role: TranscriptRole; content: string },
   incoming: { role: TranscriptRole; content: string },
 ): boolean {
   if (existing.role !== incoming.role) {
     return false;
   }
+  if (existing.content === incoming.content) {
+    return true;
+  }
+  // Live partial → final for the same turn.
   return (
-    existing.content === incoming.content ||
     incoming.content.startsWith(existing.content) ||
     existing.content.startsWith(incoming.content)
   );
 }
 
-/** Merge rolling last-5 window into full transcript. */
+function toTurns(
+  incoming: ReadonlyArray<{ role: TranscriptRole; content: string }>,
+  idOffset = 0,
+): TranscriptTurn[] {
+  return incoming.map((turn, index) => ({
+    id: `t-${idOffset + index}`,
+    role: turn.role,
+    content: turn.content,
+  }));
+}
+
+/**
+ * Merge Retell's rolling transcript window into the full local history.
+ * Finds the longest overlap between the end of `previous` and the start of
+ * `incoming`, then replaces that suffix with the fresh window (no duplicates).
+ */
 export function mergeTranscriptTurns(
   previous: readonly TranscriptTurn[],
   incoming: ReadonlyArray<{ role: TranscriptRole; content: string }>,
@@ -63,28 +81,40 @@ export function mergeTranscriptTurns(
   }
 
   if (previous.length === 0) {
-    return incoming.map((turn, index) => ({
-      id: `t-${index}`,
-      role: turn.role,
-      content: turn.content,
-    }));
+    return toTurns(incoming);
   }
 
-  let startIdx = -1;
-  const searchFrom = Math.max(0, previous.length - incoming.length - 1);
-  for (let i = searchFrom; i < previous.length; i++) {
-    if (aligns(previous[i], incoming[0])) {
-      startIdx = i;
+  const maxOverlap = Math.min(previous.length, incoming.length);
+  let overlap = 0;
+
+  for (let len = maxOverlap; len > 0; len -= 1) {
+    let matches = true;
+    for (let i = 0; i < len; i += 1) {
+      const existing = previous[previous.length - len + i];
+      const next = incoming[i];
+      if (!existing || !next || !sameUtterance(existing, next)) {
+        matches = false;
+        break;
+      }
+    }
+    if (matches) {
+      overlap = len;
       break;
     }
   }
 
-  if (startIdx === -1) {
+  if (overlap === 0) {
+    // No overlap: only append genuinely new turns (avoid replaying the window).
     const next = [...previous];
     for (const turn of incoming) {
       const last = next[next.length - 1];
-      if (last && last.role === turn.role) {
+      if (last && sameUtterance(last, turn)) {
         next[next.length - 1] = { ...last, content: turn.content };
+        continue;
+      }
+      // Skip if this utterance already exists near the end (stale window).
+      const recent = next.slice(-incoming.length);
+      if (recent.some((item) => sameUtterance(item, turn))) {
         continue;
       }
       next.push({
@@ -96,9 +126,9 @@ export function mergeTranscriptTurns(
     return next;
   }
 
-  const head = previous.slice(0, startIdx);
+  const head = previous.slice(0, previous.length - overlap);
   const rebuilt = incoming.map((turn, index) => ({
-    id: previous[startIdx + index]?.id ?? `t-${head.length + index}`,
+    id: previous[previous.length - overlap + index]?.id ?? `t-${head.length + index}`,
     role: turn.role,
     content: turn.content,
   }));

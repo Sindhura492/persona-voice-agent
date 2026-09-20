@@ -6,6 +6,7 @@ import { contactsMatch } from "@/features/shared/guestContact";
 import { useGuestContact } from "@/features/shared/GuestContactProvider";
 import { STATUS_OVERLAY_CLASS } from "@/features/shared/statusOverlay";
 import { useGuestScopedRow } from "@/features/shared/useGuestScopedRow";
+import { useStatusCardPresence } from "@/features/shared/statusCardPresence";
 import { createBrowserClient } from "@/lib/supabase/client";
 import {
   formatSkillLevel,
@@ -14,7 +15,7 @@ import {
 } from "./gearTypes";
 
 export function GearFittingStatus() {
-  const { guestContact, sessionScopedAt } = useGuestContact();
+  const { guestContact, sessionScopedAt, statusPanelEpoch } = useGuestContact();
   const bookingIdsRef = useRef<Set<string>>(new Set());
 
   const parse = useCallback((row: unknown) => parseGearFitting(row), []);
@@ -42,12 +43,15 @@ export function GearFittingStatus() {
   const fitting = useGuestScopedRow<GearFitting>({
     guestContact,
     sessionScopedAt,
+    statusPanelEpoch,
     table: "gear_fittings",
     events: ["INSERT"],
     parse,
     channelName: "ski-gear-fittings",
     belongsToGuest,
   });
+
+  useStatusCardPresence("gear", Boolean(fitting));
 
   if (!fitting) {
     return null;

@@ -5,6 +5,7 @@ import { useLocale } from "@/features/locale/LocaleProvider";
 import { CallTranscript } from "./CallTranscript";
 import { GuestDetailsForm } from "./GuestDetailsForm";
 import { LoyaltyPreviewBanner } from "./LoyaltyPreviewBanner";
+import { VoiceOrb } from "./VoiceOrb";
 import { useVoiceSession } from "./useVoiceSession";
 import { voiceStateLabel } from "./voiceLabels";
 import { widgetConfig } from "./widgetConfig";
@@ -23,12 +24,18 @@ type VoiceWidgetProps = {
   session: ReturnType<typeof useVoiceSession>;
   surface?: "light" | "dark";
   showDisclosure?: boolean;
+  hideOrb?: boolean;
+  hideGuestForm?: boolean;
+  hidePrimaryAction?: boolean;
 };
 
 export function VoiceWidget({
   session,
   surface = "light",
   showDisclosure = true,
+  hideOrb = false,
+  hideGuestForm = false,
+  hidePrimaryAction = false,
 }: VoiceWidgetProps) {
   const { locale } = useLocale();
   const {
@@ -79,10 +86,15 @@ export function VoiceWidget({
         </div>
       ) : null}
 
-      {!awaitingConsent ? (
-        <p className={`text-center text-small ${statusClass}`}>
-          {voiceStateLabel(state, locale)}
-        </p>
+      {!hideOrb ? (
+        <div className="flex flex-col items-center gap-md">
+          <VoiceOrb state={state} size="lg" />
+          {!awaitingConsent ? (
+            <p className={`text-center text-small ${statusClass}`}>
+              {voiceStateLabel(state, locale)}
+            </p>
+          ) : null}
+        </div>
       ) : null}
 
       {error ? (
@@ -91,43 +103,47 @@ export function VoiceWidget({
         </p>
       ) : null}
 
-      <GuestDetailsForm
-        key={isActive ? "call-active" : "call-idle"}
-        focus={isActive ? detailFocus : null}
-        expanded={isActive || awaitingConsent}
-        requireBoth={bookingIntent}
-        guestName={session.guestDetails.guestName}
-        guestEmail={session.guestDetails.guestEmail}
-        disabled={isStarting || isSharingDetails}
-        isSharing={isSharingDetails}
-        onChange={setGuestDetails}
-        onShare={shareGuestDetails}
-      />
+      {!hideGuestForm ? (
+        <GuestDetailsForm
+          key={isActive ? "call-active" : "call-idle"}
+          focus={isActive ? detailFocus : null}
+          expanded={isActive || awaitingConsent}
+          requireBoth={bookingIntent}
+          guestName={session.guestDetails.guestName}
+          guestEmail={session.guestDetails.guestEmail}
+          disabled={isStarting || isSharingDetails}
+          isSharing={isSharingDetails}
+          onChange={setGuestDetails}
+          onShare={shareGuestDetails}
+        />
+      ) : null}
 
       <LoyaltyPreviewBanner preview={loyaltyPreview} />
 
-      <Button
-        variant={isActive ? "outline" : "primary"}
-        className={
-          isActive
-            ? `min-w-[14rem] font-medium ring-2 ring-ice ring-offset-2 ring-offset-snow-soft${
-                connectPulse ? " voice-connect-pulse-btn" : ""
-              }`
-            : `min-w-[14rem] font-medium${
-                connectPulse ? " voice-connect-pulse-btn" : ""
-              }`
-        }
-        disabled={!isActive && isStarting}
-        onClick={() => {
-          if (isActive) {
-            endCall();
-            return;
+      {!hidePrimaryAction ? (
+        <Button
+          variant={isActive ? "outline" : "primary"}
+          className={
+            isActive
+              ? `w-full max-w-sm font-medium ring-2 ring-ice ring-offset-2 ring-offset-snow-soft sm:w-auto sm:min-w-[14rem]${
+                  connectPulse ? " voice-connect-pulse-btn" : ""
+                }`
+              : `w-full max-w-sm font-medium sm:w-auto sm:min-w-[14rem]${
+                  connectPulse ? " voice-connect-pulse-btn" : ""
+                }`
           }
-          void startCall();
-        }}
-      >
-        {isActive ? END_LABEL[locale] : primaryLabel}
-      </Button>
+          disabled={!isActive && isStarting}
+          onClick={() => {
+            if (isActive) {
+              endCall();
+              return;
+            }
+            void startCall();
+          }}
+        >
+          {isActive ? END_LABEL[locale] : primaryLabel}
+        </Button>
+      ) : null}
 
       {isActive ? (
         <CallTranscript

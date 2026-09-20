@@ -41,10 +41,10 @@ function LocaleToggle() {
 export function Header() {
   return (
     <header className="header-bar absolute inset-x-0 top-0 z-40">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-lg py-md md:px-xl md:py-lg">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-md py-md sm:px-lg md:px-xl md:py-lg">
         <a
           href="#top"
-          className="site-wordmark font-display text-[1.65rem] font-bold leading-none tracking-[0.1em] text-white md:text-[2rem]"
+          className="site-wordmark font-display text-[1.4rem] font-bold leading-none tracking-[0.1em] text-white sm:text-[1.65rem] md:text-[2rem]"
         >
           {RESORT_NAME}
         </a>

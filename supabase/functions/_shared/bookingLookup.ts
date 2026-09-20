@@ -28,6 +28,15 @@ export async function findActiveBooking(
   supabase: SupabaseClient,
   lookup: { booking_id: string | null; contact: string },
 ): Promise<BookingRow | null> {
+  const bookings = await findActiveBookings(supabase, lookup);
+  return bookings[0] ?? null;
+}
+
+/** All non-cancelled bookings for a contact (newest first). */
+export async function findActiveBookings(
+  supabase: SupabaseClient,
+  lookup: { booking_id: string | null; contact: string },
+): Promise<BookingRow[]> {
   const contact = normalizeContact(lookup.contact);
 
   if (lookup.booking_id) {
@@ -39,15 +48,14 @@ export async function findActiveBooking(
       .maybeSingle();
 
     if (!error && isBookingRow(data)) {
-      return data;
+      return [data];
     }
 
-    // Stale booking_id (e.g. cancelled then rebooked); fall back to contact.
     if (!contact) {
-      return null;
+      return [];
     }
   } else if (!contact) {
-    return null;
+    return [];
   }
 
   const { data, error } = await supabase
@@ -55,12 +63,11 @@ export async function findActiveBooking(
     .select(BOOKING_COLUMNS)
     .ilike("contact", contact)
     .neq("status", "cancelled")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .order("created_at", { ascending: false });
 
-  if (error || !isBookingRow(data)) {
-    return null;
+  if (error || !Array.isArray(data)) {
+    return [];
   }
-  return data;
+
+  return data.filter(isBookingRow);
 }

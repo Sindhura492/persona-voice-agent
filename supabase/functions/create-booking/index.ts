@@ -1,9 +1,11 @@
 import { mockAvailability } from "../_shared/availability.ts";
-import { isBookingRow } from "../_shared/bookingLookup.ts";
+import { findActiveBooking, isBookingRow } from "../_shared/bookingLookup.ts";
 import {
+  awardLoyaltyPoints,
   discountForPoints,
   ensureLoyaltyAccount,
   fetchLoyaltyAccount,
+  pointsEarnedForBooking,
   PROGRAM_NAME,
   WELCOME_BONUS_POINTS,
 } from "../_shared/loyalty.ts";
@@ -66,6 +68,13 @@ Deno.serve(async (request: Request): Promise<Response> => {
 
   try {
     const supabase = getServiceClient();
+
+    // Advisory only — never block a second booking.
+    const existingActive = await findActiveBooking(supabase, {
+      booking_id: null,
+      contact: payload.contact,
+    });
+
     const estimatedTotal = requested.total;
     let loyaltyPointsRedeemed = 0;
     let loyaltyDiscountEur = 0;
@@ -162,6 +171,8 @@ Deno.serve(async (request: Request): Promise<Response> => {
       welcome_bonus: boolean;
       welcome_points: number;
       points_balance: number;
+      points_earned: number;
+      earn_rule: string;
     } | null = null;
 
     try {
@@ -170,14 +181,45 @@ Deno.serve(async (request: Request): Promise<Response> => {
         payload.guest_name,
         payload.contact,
       );
+
+      const earn = pointsEarnedForBooking({
+        estimated_total_eur: estimatedTotal,
+        lift_pass_included: payload.lift_pass_included,
+        lessons_included: payload.lessons_included,
+      });
+
+      const updated = await awardLoyaltyPoints(
+        supabase,
+        loyalty.account.id,
+        earn.points,
+      );
+
       loyaltyEnrollment = {
         welcome_bonus: loyalty.welcome_bonus,
         welcome_points: loyalty.welcome_points,
-        points_balance: loyalty.account.points_balance,
+        points_balance:
+          updated?.points_balance ??
+          loyalty.account.points_balance + earn.points,
+        points_earned: earn.points,
+        earn_rule: earn.rule_summary,
       };
     } catch {
       loyaltyEnrollment = null;
     }
+
+    const existingNotice = existingActive
+      ? ` Note: guest already had an active booking (${existingActive.package_type}, ${existingActive.arrival_date} → ${existingActive.departure_date}, status ${existingActive.status}). Mention it briefly; do not block — this new booking was created successfully.`
+      : "";
+
+    const earnLine = loyaltyEnrollment?.points_earned
+      ? ` They earned ${loyaltyEnrollment.points_earned} ${PROGRAM_NAME} points this stay (${loyaltyEnrollment.earn_rule}). New balance: ${loyaltyEnrollment.points_balance}.`
+      : "";
+
+    const guidanceCore = loyaltyPointsRedeemed > 0
+      ? `Confirm subtotal EUR ${estimatedTotal}, discount EUR ${loyaltyDiscountEur} (${loyaltyPointsRedeemed} pts), and total EUR ${finalTotal}.`
+      : loyaltyEnrollment?.welcome_bonus
+        ? `Announce ${WELCOME_BONUS_POINTS} welcome ${PROGRAM_NAME} points plus earn from this booking.`
+        : `Confirm the booking.`;
 
     return jsonResponse(
       {
@@ -195,6 +237,9 @@ Deno.serve(async (request: Request): Promise<Response> => {
         loyalty_discount_eur: loyaltyDiscountEur,
         final_total: finalTotal,
         loyalty_points_redeemed: loyaltyPointsRedeemed,
+        loyalty_points_earned: loyaltyEnrollment?.points_earned ?? 0,
+        loyalty_earn_rule: loyaltyEnrollment?.earn_rule ?? null,
+        points_balance: loyaltyEnrollment?.points_balance ?? null,
         currency: requested.currency,
         created_at: data.created_at,
         loyalty_program: PROGRAM_NAME,
@@ -202,11 +247,16 @@ Deno.serve(async (request: Request): Promise<Response> => {
         welcome_bonus_points: loyaltyEnrollment?.welcome_bonus
           ? WELCOME_BONUS_POINTS
           : 0,
-        agent_guidance: loyaltyPointsRedeemed > 0
-          ? `Confirm subtotal EUR ${estimatedTotal}, discount EUR ${loyaltyDiscountEur} (${loyaltyPointsRedeemed} pts), and total EUR ${finalTotal}.`
-          : loyaltyEnrollment?.welcome_bonus
-            ? `Announce ${WELCOME_BONUS_POINTS} welcome ${PROGRAM_NAME} points were added.`
-            : `Guest has ${loyaltyEnrollment?.points_balance ?? 0} ${PROGRAM_NAME} points.`,
+        existing_active_booking: existingActive
+          ? {
+              booking_id: existingActive.id,
+              package_type: existingActive.package_type,
+              arrival_date: existingActive.arrival_date,
+              departure_date: existingActive.departure_date,
+              status: existingActive.status,
+            }
+          : null,
+        agent_guidance: guidanceCore + earnLine + existingNotice,
       },
       201,
     );

@@ -8,7 +8,7 @@ type HeroStageCopy = {
 export type CapabilityItem = {
   label: string;
   description: string;
-  icon: "booking" | "gear" | "loyalty" | "safety";
+  icon: "booking" | "gear" | "loyalty" | "safety" | "plans" | "waitlist";
 };
 
 type CapabilitySectionCopy = {
@@ -24,16 +24,16 @@ type VoiceEntryCopy = {
 
 export const CAPABILITY_SECTION_COPY: Record<Locale, CapabilitySectionCopy> = {
   en: {
-    eyebrow: "Before you call",
-    title: "What your concierge can help with",
+    eyebrow: "Try saying",
+    title: "Things you can ask",
     intro:
-      "Say any of the following in your own words. No menus, no forms.",
+      "Speak naturally — here are ideas to get started. No menus, no forms.",
   },
   de: {
-    eyebrow: "Vor Ihrem Anruf",
-    title: "Wobei Ihr Concierge hilft",
+    eyebrow: "Zum Beispiel",
+    title: "Das können Sie fragen",
     intro:
-      "Sagen Sie es in eigenen Worten, ohne Menüs und ohne Formulare.",
+      "Sprechen Sie frei — hier ein paar Einstiege. Keine Menüs, keine Formulare.",
   },
 };
 
@@ -62,45 +62,77 @@ export const HERO_STAGE_COPY: Record<Locale, HeroStageCopy> = {
 export const CAPABILITY_ITEMS: Record<Locale, readonly CapabilityItem[]> = {
   en: [
     {
-      label: "Book & Reschedule",
-      description: "Plan or change your stay",
+      label: "Book a stay",
+      description: "“I’d like a day pass for November 4th with a lift pass.”",
       icon: "booking",
     },
     {
-      label: "Gear Fitting",
-      description: "Get properly fitted before you arrive",
+      label: "Check or change a booking",
+      description: "“What’s on my booking?” · “Can I reschedule or cancel?”",
+      icon: "booking",
+    },
+    {
+      label: "Plans & pricing by email",
+      description: "“Email me your packages and rates.”",
+      icon: "plans",
+    },
+    {
+      label: "Gear fitting",
+      description: "“Save my height, boot size, and skill level for rental.”",
       icon: "gear",
     },
     {
-      label: "Lift Pass & Loyalty",
-      description: "Check your balance",
+      label: "Loyalty points",
+      description: "“How many Summit Circle points do I have?”",
       icon: "loyalty",
     },
     {
-      label: "Always here for safety questions",
-      description: "Anything urgent goes straight to a specialist",
+      label: "Lesson waitlist",
+      description: "“Put me on the waitlist for ski school.”",
+      icon: "waitlist",
+    },
+    {
+      label: "Safety & mountain help",
+      description: "Anything urgent is handed straight to a specialist.",
       icon: "safety",
     },
   ],
   de: [
     {
-      label: "Buchen & Umbuchen",
-      description: "Aufenthalt planen oder ändern",
+      label: "Aufenthalt buchen",
+      description: "„Ich möchte einen Tagespass für den 4. November mit Skipass.“",
       icon: "booking",
     },
     {
+      label: "Buchung prüfen oder ändern",
+      description:
+        "„Was steht in meiner Buchung?“ · „Kann ich umbuchen oder stornieren?“",
+      icon: "booking",
+    },
+    {
+      label: "Angebote & Preise per E-Mail",
+      description: "„Schicken Sie mir bitte Ihre Pakete und Preise.“",
+      icon: "plans",
+    },
+    {
       label: "Ausrüstungsanprobe",
-      description: "Passend ausgestattet vor Anreise",
+      description:
+        "„Speichern Sie Größe, Schuhgröße und Können für die Leihe.“",
       icon: "gear",
     },
     {
-      label: "Skipass & Treue",
-      description: "Kontostand prüfen",
+      label: "Treuepunkte",
+      description: "„Wie viele Summit-Circle-Punkte habe ich?“",
       icon: "loyalty",
     },
     {
-      label: "Immer da bei Sicherheitsfragen",
-      description: "Dringendes direkt an einen Spezialisten",
+      label: "Warteliste Skischule",
+      description: "„Setzen Sie mich auf die Warteliste für den Kurs.“",
+      icon: "waitlist",
+    },
+    {
+      label: "Sicherheit & Berghilfe",
+      description: "Dringendes geht direkt an einen Spezialisten.",
       icon: "safety",
     },
   ],

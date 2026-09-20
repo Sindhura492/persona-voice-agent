@@ -41,13 +41,24 @@ export function CallTranscript({
   const titleClass = isLight ? "text-slate" : "text-white/45";
   const emptyClass = isLight ? "text-graphite" : "text-white/50";
   const roleClass = isLight ? "text-slate" : "text-white/40";
-  const scrollAnchorRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
+  const lastSignatureRef = useRef("");
 
   useEffect(() => {
-    if (turns.length === 0) {
+    const list = listRef.current;
+    if (!list || turns.length === 0) {
       return;
     }
-    scrollAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+
+    const last = turns[turns.length - 1];
+    const signature = `${turns.length}:${last?.id ?? ""}:${last?.content.length ?? 0}`;
+    if (signature === lastSignatureRef.current) {
+      return;
+    }
+    lastSignatureRef.current = signature;
+
+    // Instant scroll inside the list only — avoids smooth scrollIntoView jitter.
+    list.scrollTop = list.scrollHeight;
   }, [turns]);
 
   return (
@@ -64,7 +75,10 @@ export function CallTranscript({
           {copy.empty}
         </p>
       ) : (
-        <ul className="mt-sm max-h-56 space-y-md overflow-y-auto pb-md pr-xs">
+        <ul
+          ref={listRef}
+          className="mt-sm max-h-56 space-y-md overflow-y-auto pb-md pr-xs"
+        >
           {turns.map((turn) => {
             const isUser = turn.role === "user";
             return (
@@ -95,9 +109,6 @@ export function CallTranscript({
               </li>
             );
           })}
-          <li aria-hidden className="list-none">
-            <div ref={scrollAnchorRef} className="h-px w-full" />
-          </li>
         </ul>
       )}
     </aside>

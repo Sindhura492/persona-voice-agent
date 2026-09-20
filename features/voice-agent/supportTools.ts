@@ -88,12 +88,17 @@ export const lookupLoyaltyBalanceTool: ToolSchema = {
 export const redeemLoyaltyPointsTool: ToolSchema = {
   name: "redeem_loyalty_points",
   description:
-    "Redeem Summit Circle points when balance is sufficient. Sends a confirmation email with discount applied and remaining balance. Confirm redemption amount with the guest first.",
+    "Redeem Summit Circle points when balance is sufficient. Prefer applying points at create_booking via loyalty_points_redeemed. If the stay already exists, always pass booking_id (or contact) so the booking total updates and an updated bill email is sent when a EUR discount applies. Confirm redemption amount with the guest first.",
   parameters: {
     type: "object",
     properties: {
       contact: { type: "string", description: "Account contact." },
       points: { type: "number", description: "Whole points to redeem." },
+      booking_id: {
+        type: "string",
+        description:
+          "Optional booking UUID. When set and a EUR discount applies, updates the booking totals and emails an updated bill.",
+      },
     },
     required: ["contact", "points"],
   },
@@ -101,7 +106,8 @@ export const redeemLoyaltyPointsTool: ToolSchema = {
 
 export const joinWaitlistTool: ToolSchema = {
   name: "join_waitlist",
-  description: "Add guest to lesson waitlist when slots are full.",
+  description:
+    "Add guest to lesson waitlist when slots are full. Sends a confirmation email when contact is an email.",
   parameters: {
     type: "object",
     properties: {

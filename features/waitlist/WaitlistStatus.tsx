@@ -6,6 +6,7 @@ import { contactsMatch } from "@/features/shared/guestContact";
 import { useGuestContact } from "@/features/shared/GuestContactProvider";
 import { STATUS_OVERLAY_CLASS } from "@/features/shared/statusOverlay";
 import { useGuestScopedRow } from "@/features/shared/useGuestScopedRow";
+import { useStatusCardPresence } from "@/features/shared/statusCardPresence";
 import {
   formatLessonDate,
   parseWaitlistEntry,
@@ -17,7 +18,7 @@ function formatLevel(level: string): string {
 }
 
 export function WaitlistStatus() {
-  const { guestContact, sessionScopedAt } = useGuestContact();
+  const { guestContact, sessionScopedAt, statusPanelEpoch } = useGuestContact();
 
   const parse = useCallback((row: unknown) => parseWaitlistEntry(row), []);
 
@@ -30,12 +31,15 @@ export function WaitlistStatus() {
   const entry = useGuestScopedRow<WaitlistEntry>({
     guestContact,
     sessionScopedAt,
+    statusPanelEpoch,
     table: "waitlist_entries",
     events: ["INSERT"],
     parse,
     channelName: "ski-waitlist",
     belongsToGuest,
   });
+
+  useStatusCardPresence("waitlist", Boolean(entry));
 
   if (!entry) {
     return null;

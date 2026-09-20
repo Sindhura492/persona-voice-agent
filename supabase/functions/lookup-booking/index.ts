@@ -1,4 +1,4 @@
-import { findActiveBooking } from "../_shared/bookingLookup.ts";
+import { findActiveBookings } from "../_shared/bookingLookup.ts";
 import {
   extractToolArgs,
   getServiceClient,
@@ -41,15 +41,17 @@ Deno.serve(async (request: Request): Promise<Response> => {
 
   try {
     const supabase = getServiceClient();
-    const booking = await findActiveBooking(supabase, {
+    const bookings = await findActiveBookings(supabase, {
       booking_id: parsed.data.booking_id,
       contact: parsed.data.contact,
     });
 
-    if (!booking) {
+    if (bookings.length === 0) {
       return jsonResponse({
         success: true,
         found: false,
+        count: 0,
+        bookings: [],
         message:
           "No active booking found for that booking_id or contact. Ask the guest to confirm details.",
       });
@@ -58,7 +60,14 @@ Deno.serve(async (request: Request): Promise<Response> => {
     return jsonResponse({
       success: true,
       found: true,
-      booking,
+      count: bookings.length,
+      // Keep `booking` for older prompt/tool habits = newest active stay.
+      booking: bookings[0],
+      bookings,
+      agent_guidance:
+        bookings.length > 1
+          ? `Guest has ${bookings.length} active bookings. Summarize each briefly (package + dates + status). Do not pretend there is only one.`
+          : "Read package, dates, status, and totals back exactly.",
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unexpected error";

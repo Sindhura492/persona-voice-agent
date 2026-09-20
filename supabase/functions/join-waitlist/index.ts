@@ -4,6 +4,7 @@ import {
   handleOptions,
   jsonResponse,
 } from "../_shared/http.ts";
+import { postToN8n } from "../_shared/n8n.ts";
 import type { ToolErrorResult } from "../_shared/skiTypes.ts";
 import { validateJoinWaitlist } from "./validate.ts";
 
@@ -98,13 +99,39 @@ Deno.serve(async (request: Request): Promise<Response> => {
 
     const position = (count ?? 0) + 1;
 
+    let emailed = false;
+    if (data.contact.includes("@")) {
+      try {
+        await postToN8n({
+          event: "waitlist_joined",
+          type: "WAITLIST_JOINED",
+          to: data.contact,
+          guestName: data.guest_name,
+          contact: data.contact,
+          waitlist_id: data.id,
+          requested_date: data.requested_date,
+          lesson_level: data.lesson_level,
+          queue_position: position,
+          status: data.status,
+          sentAt: new Date().toISOString(),
+        });
+        emailed = true;
+      } catch {
+        // Waitlist entry saved even if email fails.
+      }
+    }
+
     return jsonResponse(
       {
         success: true,
         waitlist_entry: data,
         queue_position: position,
+        emailed,
         message:
           `You are #${position} on the waitlist for ${parsed.data.lesson_level} lessons on ${parsed.data.requested_date}. We will notify you if a spot opens.`,
+        agent_guidance: emailed
+          ? "Confirm their waitlist position and that a confirmation email was sent."
+          : "Confirm their waitlist position. No email was sent (no email contact).",
       },
       201,
     );

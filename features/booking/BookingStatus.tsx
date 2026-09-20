@@ -5,7 +5,8 @@ import { Badge } from "@/components/ui/Badge";
 import { contactsMatch } from "@/features/shared/guestContact";
 import { useGuestContact } from "@/features/shared/GuestContactProvider";
 import { STATUS_OVERLAY_CLASS } from "@/features/shared/statusOverlay";
-import { useGuestScopedRow } from "@/features/shared/useGuestScopedRow";
+import { useGuestScopedRows } from "@/features/shared/useGuestScopedRows";
+import { useStatusCardPresence } from "@/features/shared/statusCardPresence";
 import {
   bookingStatusHeadline,
   formatPackageLabel,
@@ -24,30 +25,7 @@ function bookingFootnote(booking: Booking): string {
   return "Concierge confirms within the hour.";
 }
 
-export function BookingStatus() {
-  const { guestContact, sessionScopedAt } = useGuestContact();
-
-  const parse = useCallback((row: unknown) => parseBooking(row), []);
-
-  const belongsToGuest = useCallback(
-    (booking: Booking, contact: string) => contactsMatch(booking.contact, contact),
-    [],
-  );
-
-  const booking = useGuestScopedRow<Booking>({
-    guestContact,
-    sessionScopedAt,
-    table: "bookings",
-    events: ["INSERT", "UPDATE"],
-    parse,
-    channelName: "ski-bookings",
-    belongsToGuest,
-  });
-
-  if (!booking) {
-    return null;
-  }
-
+function BookingCard({ booking }: { booking: Booking }) {
   return (
     <aside aria-live="polite" className={STATUS_OVERLAY_CLASS}>
       <Badge className="font-semibold text-charcoal">
@@ -86,5 +64,41 @@ export function BookingStatus() {
         {bookingFootnote(booking)}
       </p>
     </aside>
+  );
+}
+
+export function BookingStatus() {
+  const { guestContact, sessionScopedAt, statusPanelEpoch } = useGuestContact();
+
+  const parse = useCallback((row: unknown) => parseBooking(row), []);
+
+  const belongsToGuest = useCallback(
+    (booking: Booking, contact: string) => contactsMatch(booking.contact, contact),
+    [],
+  );
+
+  const bookings = useGuestScopedRows<Booking>({
+    guestContact,
+    sessionScopedAt,
+    statusPanelEpoch,
+    table: "bookings",
+    events: ["INSERT", "UPDATE"],
+    parse,
+    channelName: "ski-bookings",
+    belongsToGuest,
+  });
+
+  useStatusCardPresence("booking", bookings.length > 0);
+
+  if (bookings.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="flex w-full flex-col gap-sm">
+      {bookings.map((booking) => (
+        <BookingCard key={booking.id} booking={booking} />
+      ))}
+    </div>
   );
 }

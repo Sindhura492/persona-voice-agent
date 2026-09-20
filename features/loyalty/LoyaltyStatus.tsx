@@ -6,6 +6,7 @@ import { contactsMatch } from "@/features/shared/guestContact";
 import { useGuestContact } from "@/features/shared/GuestContactProvider";
 import { STATUS_OVERLAY_CLASS } from "@/features/shared/statusOverlay";
 import { useGuestScopedRow } from "@/features/shared/useGuestScopedRow";
+import { useStatusCardPresence } from "@/features/shared/statusCardPresence";
 import {
   parseLoyaltyAccount,
   type LoyaltyAccount,
@@ -20,7 +21,7 @@ function withSnapshot(
 }
 
 export function LoyaltyStatus() {
-  const { guestContact, sessionScopedAt } = useGuestContact();
+  const { guestContact, sessionScopedAt, statusPanelEpoch } = useGuestContact();
   const previousBalanceRef = useRef<number | null>(null);
 
   const parse = useCallback((row: unknown) => {
@@ -42,12 +43,15 @@ export function LoyaltyStatus() {
   const loyalty = useGuestScopedRow<LoyaltySnapshot>({
     guestContact,
     sessionScopedAt,
+    statusPanelEpoch,
     table: "loyalty_accounts",
     events: ["INSERT", "UPDATE"],
     parse,
     channelName: "ski-loyalty",
     belongsToGuest,
   });
+
+  useStatusCardPresence("loyalty", Boolean(loyalty));
 
   if (!loyalty) {
     return null;

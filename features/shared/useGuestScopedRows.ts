@@ -7,7 +7,7 @@ import { isRowFromSession } from "./sessionScope";
 
 type RealtimeEvent = "INSERT" | "UPDATE";
 
-type UseGuestScopedRowConfig<T> = {
+type UseGuestScopedRowsConfig<T extends { id: string }> = {
   guestContact: string | null;
   sessionScopedAt: number | null;
   statusPanelEpoch?: number;
@@ -18,16 +18,19 @@ type UseGuestScopedRowConfig<T> = {
   belongsToGuest: (row: T, normalizedContact: string) => boolean | Promise<boolean>;
 };
 
-export function useGuestScopedRow<T>(config: UseGuestScopedRowConfig<T>): T | null {
-  const [row, setRow] = useState<T | null>(null);
+/** Collects multiple session-scoped rows (e.g. several bookings). */
+export function useGuestScopedRows<T extends { id: string }>(
+  config: UseGuestScopedRowsConfig<T>,
+): T[] {
+  const [rows, setRows] = useState<T[]>([]);
 
   useEffect(() => {
-    setRow(null);
+    setRows([]);
   }, [config.statusPanelEpoch]);
 
   useEffect(() => {
     if (!config.guestContact || config.sessionScopedAt === null) {
-      setRow(null);
+      setRows([]);
       return;
     }
 
@@ -52,12 +55,15 @@ export function useGuestScopedRow<T>(config: UseGuestScopedRowConfig<T>): T | nu
       }
       const matches = await config.belongsToGuest(parsed, normalizedContact);
       if (!cancelled && matches) {
-        setRow(parsed);
+        setRows((current) => {
+          const without = current.filter((row) => row.id !== parsed.id);
+          return [parsed, ...without];
+        });
       }
     };
 
     const channel = supabase.channel(
-      `${config.channelName}-${normalizedContact}-${scopedAt}-${config.statusPanelEpoch ?? 0}`,
+      `${config.channelName}-multi-${normalizedContact}-${scopedAt}-${config.statusPanelEpoch ?? 0}`,
     );
 
     for (const event of config.events) {
@@ -87,5 +93,5 @@ export function useGuestScopedRow<T>(config: UseGuestScopedRowConfig<T>): T | nu
     config.table,
   ]);
 
-  return row;
+  return rows;
 }

@@ -15,10 +15,10 @@ export function CapabilityStrip() {
   return (
     <section
       aria-labelledby="capabilities-heading"
-      className="border-t border-stone bg-gradient-to-b from-mist to-snow px-lg py-2xl md:px-xl"
+      className="border-t border-stone bg-gradient-to-b from-mist to-snow px-md py-xl sm:px-lg sm:py-2xl md:px-xl"
     >
-      <div className="mx-auto max-w-6xl">
-        <header className="max-w-2xl">
+      <div className="mx-auto grid max-w-6xl gap-xl lg:grid-cols-[minmax(0,18rem)_1fr] lg:items-start lg:gap-2xl">
+        <header className="max-w-sm">
           <p className="text-caption font-semibold uppercase tracking-[0.2em] text-graphite">
             {section.eyebrow}
           </p>
@@ -33,19 +33,23 @@ export function CapabilityStrip() {
           </p>
         </header>
 
-        <ul className="mt-xl grid gap-md sm:grid-cols-2 lg:grid-cols-4 lg:gap-lg">
+        <ul className="grid gap-0 sm:grid-cols-2 sm:gap-x-xl">
           {items.map((item) => (
             <li
               key={item.label}
-              className="list-none border border-stone-soft bg-snow-soft px-lg py-lg shadow-[0_1px_0_rgba(26,28,31,0.04)]"
+              className="list-none border-b border-stone-soft py-md last:border-b-0 sm:py-lg sm:[&:nth-last-child(-n+2)]:border-b-0"
             >
-              <CapabilityIcon name={item.icon} />
-              <h3 className="mt-md font-sans text-small font-semibold uppercase tracking-[0.06em] leading-snug text-charcoal">
-                {item.label}
-              </h3>
-              <p className="mt-sm text-small leading-relaxed text-charcoal-muted">
-                {item.description}
-              </p>
+              <div className="flex gap-md">
+                <CapabilityIcon name={item.icon} />
+                <div className="min-w-0">
+                  <h3 className="font-sans text-small font-semibold uppercase tracking-[0.06em] leading-snug text-charcoal">
+                    {item.label}
+                  </h3>
+                  <p className="mt-sm text-small leading-relaxed text-charcoal-muted">
+                    {item.description}
+                  </p>
+                </div>
+              </div>
             </li>
           ))}
         </ul>

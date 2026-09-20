@@ -23,7 +23,7 @@ export async function updateLiveGuestDetails(
           },
         },
         call_control: {
-          additional_context: `The guest typed their details in the on-screen form and tapped Share. Use exactly guest_name="${details.guestName}" and guest_email="${details.guestEmail}" in all tool calls. Do not ask them to spell aloud.`,
+          additional_context: `The guest typed their details in the on-screen form and tapped Share. Their name is "${details.guestName}" and email is "${details.guestEmail}". Immediately greet them by first name (use the first word of the name), then continue helping. Use exactly guest_name="${details.guestName}" and guest_email="${details.guestEmail}" in all tool calls. Do not ask them to spell aloud.`,
           trigger_response: true,
         },
       }),

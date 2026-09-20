@@ -1,4 +1,10 @@
-type CapabilityIconName = "booking" | "gear" | "loyalty" | "safety";
+type CapabilityIconName =
+  | "booking"
+  | "gear"
+  | "loyalty"
+  | "safety"
+  | "plans"
+  | "waitlist";
 
 type CapabilityIconProps = {
   name: CapabilityIconName;
@@ -12,6 +18,10 @@ const ICON_PATH: Record<CapabilityIconName, string> = {
     "M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.8 7.2 17.9l.9-5.4L4.2 8.7l5.4-.8L12 3z",
   safety:
     "M12 3l8 4v6c0 5-3.4 7.7-8 9-4.6-1.3-8-4-8-9V7l8-4zm0 2.2L6 7.5V13c0 3.6 2.4 5.6 6 6.7 3.6-1.1 6-3.1 6-6.7V7.5l-6-2.3z",
+  plans:
+    "M6 3h9l3 3v15H6V3zm2 4h8v2H8V7zm0 4h8v2H8v-2zm0 4h5v2H8v-2z",
+  waitlist:
+    "M5 6h14v2H5V6zm0 5h14v2H5v-2zm0 5h10v2H5v-2z",
 };
 
 export function CapabilityIcon({ name }: CapabilityIconProps) {

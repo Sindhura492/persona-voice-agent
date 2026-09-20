@@ -14,8 +14,11 @@ type GuestContactContextValue = {
   guestContact: string | null;
   /** When the guest shared email in this browser tab (ms since epoch). */
   sessionScopedAt: number | null;
+  /** Bumped to dismiss on-screen status cards for this session. */
+  statusPanelEpoch: number;
   setGuestContact: (contact: string) => void;
   clearGuestContact: () => void;
+  clearStatusCards: () => void;
 };
 
 const GuestContactContext = createContext<GuestContactContextValue | null>(null);
@@ -27,6 +30,7 @@ type GuestContactProviderProps = {
 export function GuestContactProvider({ children }: GuestContactProviderProps) {
   const [guestContact, setGuestContactState] = useState<string | null>(null);
   const [sessionScopedAt, setSessionScopedAt] = useState<number | null>(null);
+  const [statusPanelEpoch, setStatusPanelEpoch] = useState(0);
 
   const setGuestContact = useCallback((contact: string) => {
     const normalized = normalizeGuestContact(contact);
@@ -40,11 +44,30 @@ export function GuestContactProvider({ children }: GuestContactProviderProps) {
   const clearGuestContact = useCallback(() => {
     setGuestContactState(null);
     setSessionScopedAt(null);
+    setStatusPanelEpoch((value) => value + 1);
+  }, []);
+
+  const clearStatusCards = useCallback(() => {
+    setStatusPanelEpoch((value) => value + 1);
   }, []);
 
   const value = useMemo(
-    () => ({ guestContact, sessionScopedAt, setGuestContact, clearGuestContact }),
-    [guestContact, sessionScopedAt, setGuestContact, clearGuestContact],
+    () => ({
+      guestContact,
+      sessionScopedAt,
+      statusPanelEpoch,
+      setGuestContact,
+      clearGuestContact,
+      clearStatusCards,
+    }),
+    [
+      guestContact,
+      sessionScopedAt,
+      statusPanelEpoch,
+      setGuestContact,
+      clearGuestContact,
+      clearStatusCards,
+    ],
   );
 
   return (

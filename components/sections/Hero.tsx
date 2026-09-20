@@ -17,7 +17,7 @@ export function Hero() {
     <>
       <section
         id="top"
-        className="relative flex min-h-[min(90svh,46rem)] flex-1 items-stretch overflow-hidden bg-mist"
+        className="relative flex min-h-[100svh] flex-1 items-stretch overflow-hidden bg-mist lg:min-h-[min(82svh,40rem)]"
       >
         <Image
           src={HERO_IMAGE.src}
@@ -31,17 +31,17 @@ export function Hero() {
         <div aria-hidden className="hero-vignette" />
         <div aria-hidden className="hero-grain" />
 
-        <div className="hero-content relative z-10 mx-auto flex w-full max-w-6xl flex-col justify-end px-lg pb-xl pt-20 md:px-xl lg:flex-row lg:items-end lg:justify-between lg:gap-2xl">
-          <div className="hero-copy max-w-md pb-lg lg:pb-0">
+        <div className="hero-content relative z-10 mx-auto flex w-full max-w-6xl flex-col justify-end gap-xl px-md pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-24 sm:px-lg md:px-xl lg:flex-row lg:items-end lg:justify-between lg:gap-2xl lg:pb-xl">
+          <div className="hero-copy max-w-xl lg:max-w-md lg:pb-0">
             <p className="text-caption font-semibold uppercase tracking-[0.22em] text-white drop-shadow-[0_1px_8px_rgba(0,0,0,0.7)]">
               {copy.eyebrow}
             </p>
-            <h1 className="mt-sm font-display text-h1 font-medium leading-tight text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.75)]">
+            <h1 className="mt-sm font-display text-[1.75rem] font-medium leading-tight text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.75)] sm:text-h1">
               {copy.title}
             </h1>
           </div>
 
-          <div className="hero-panel flex w-full shrink-0 flex-col items-end lg:max-w-sm">
+          <div className="hero-panel flex w-full shrink-0 flex-col items-stretch lg:max-w-md lg:items-end">
             <GuestContactProvider>
               <VoiceLauncher />
               <WorkflowStatusPanel />

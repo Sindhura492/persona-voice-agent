@@ -18,6 +18,8 @@ type GuestDetailsFormProps = {
   guestName: string;
   guestEmail: string;
   expanded?: boolean;
+  /** Keep fields visible; hide the collapse toggle. */
+  forceOpen?: boolean;
   requireBoth?: boolean;
   disabled?: boolean;
   isSharing?: boolean;
@@ -30,6 +32,7 @@ export function GuestDetailsForm({
   guestName,
   guestEmail,
   expanded = false,
+  forceOpen = false,
   requireBoth = false,
   disabled = false,
   isSharing = false,
@@ -38,16 +41,18 @@ export function GuestDetailsForm({
 }: GuestDetailsFormProps) {
   const { locale } = useLocale();
   const copy = GUEST_DETAILS_COPY[locale];
-  const [open, setOpen] = useState(expanded);
+  const [open, setOpen] = useState(expanded || forceOpen);
   const [sharedHint, setSharedHint] = useState(false);
   const nameId = useId();
   const emailId = useId();
 
   useEffect(() => {
-    if (expanded || focus) {
+    if (forceOpen || expanded || focus) {
       setOpen(true);
     }
-  }, [expanded, focus]);
+  }, [forceOpen, expanded, focus]);
+
+  const fieldsOpen = forceOpen || open;
 
   const showName = requireBoth || focus === "name" || focus === "both" || !focus;
   const showEmail =
@@ -86,37 +91,39 @@ export function GuestDetailsForm({
     window.setTimeout(() => setSharedHint(false), 4000);
   };
 
-  const nameHighlight =
-    focus === "name" || focus === "both" || requireBoth
-      ? "border-ice-deep ring-2 ring-ice/40"
-      : "border-stone";
-  const emailHighlight =
-    focus === "email" || focus === "both" || requireBoth
-      ? "border-ice-deep ring-2 ring-ice/40"
-      : "border-stone";
+  const nameHighlight = "border-stone";
+  const emailHighlight = "border-stone";
 
   return (
     <div
-      className={`w-full rounded-sm border bg-mist/60 px-md py-md text-left ${
-        requireBoth || focus ? "border-ice-deep/40" : "border-stone"
-      }`}
+      className={
+        forceOpen
+          ? "w-full text-left"
+          : `w-full rounded-sm border border-stone bg-mist/60 px-md py-md text-left`
+      }
     >
-      <button
-        type="button"
-        className="flex w-full items-center justify-between gap-sm text-left"
-        onClick={() => setOpen((value) => !value)}
-        aria-expanded={open}
-      >
-        <span className="text-caption font-semibold uppercase tracking-[0.14em] text-charcoal">
+      {forceOpen ? (
+        <p className="text-caption font-semibold uppercase tracking-[0.14em] text-charcoal">
           {requireBoth ? copy.bookingRequired.split(".")[0].trim() : copy.toggle}
-        </span>
-        <span className="text-caption text-slate" aria-hidden>
-          {open ? "−" : "+"}
-        </span>
-      </button>
+        </p>
+      ) : (
+        <button
+          type="button"
+          className="flex w-full items-center justify-between gap-sm text-left"
+          onClick={() => setOpen((value) => !value)}
+          aria-expanded={fieldsOpen}
+        >
+          <span className="text-caption font-semibold uppercase tracking-[0.14em] text-charcoal">
+            {requireBoth ? copy.bookingRequired.split(".")[0].trim() : copy.toggle}
+          </span>
+          <span className="text-caption text-slate" aria-hidden>
+            {fieldsOpen ? "−" : "+"}
+          </span>
+        </button>
+      )}
 
-      {open ? (
-        <div className="mt-md space-y-md">
+      {fieldsOpen ? (
+        <div className={`${forceOpen ? "mt-sm" : "mt-md"} space-y-md`}>
           <p className="text-small leading-relaxed text-graphite">{prompt}</p>
 
           {showName ? (
@@ -140,7 +147,7 @@ export function GuestDetailsForm({
                   updateDetails({ guestName: event.target.value })
                 }
                 placeholder={copy.namePlaceholder}
-                className={`w-full rounded-sm bg-snow-soft px-md py-sm text-small text-charcoal outline-none focus:ring-2 focus:ring-ice-deep disabled:opacity-60 ${nameHighlight}`}
+                className={`w-full rounded-sm border bg-mist px-md py-md text-small text-charcoal outline-none transition-colors focus:border-graphite focus:ring-0 disabled:opacity-60 ${nameHighlight}`}
               />
             </div>
           ) : null}
@@ -170,7 +177,7 @@ export function GuestDetailsForm({
                   updateDetails({ guestEmail: event.target.value })
                 }
                 placeholder={copy.emailPlaceholder}
-                className={`w-full rounded-sm bg-snow-soft px-md py-sm text-small text-charcoal outline-none focus:ring-2 focus:ring-ice-deep disabled:opacity-60 ${emailHighlight}`}
+                className={`w-full rounded-sm border bg-mist px-md py-md text-small text-charcoal outline-none transition-colors focus:border-graphite focus:ring-0 disabled:opacity-60 ${emailHighlight}`}
               />
             </div>
           ) : null}

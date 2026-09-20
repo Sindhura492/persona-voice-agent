@@ -4,7 +4,7 @@ import { PACKAGE_TYPES, SKILL_LEVELS } from "./toolSchemaTypes";
 export const lookupBookingTool: ToolSchema = {
   name: "lookup_booking",
   description:
-    "Look up the guest's current active booking by contact email/phone. After a cancel-and-rebook, use contact only; do not pass an old cancelled booking_id.",
+    "Look up all active (non-cancelled) bookings for a contact. Returns bookings[] and count. If more than one, summarize each. After cancel-and-rebook, use contact only.",
   parameters: {
     type: "object",
     properties: {
@@ -51,7 +51,7 @@ export const checkAvailabilityTool: ToolSchema = {
 export const createBookingTool: ToolSchema = {
   name: "create_booking",
   description:
-    "Create a pending booking after availability looks good. Before calling, read back guest name, email, package, dates, extras, and any points to redeem; wait for explicit confirmation. Pass loyalty_points_redeemed when applying Summit Circle discount to this booking.",
+    "Create a pending booking after availability looks good. Before calling: lookup_booking to note any existing active stay (inform only, never block); lookup_loyalty_balance and advise redeemable points; on guest yes pass loyalty_points_redeemed. Read back details and wait for confirmation.",
   parameters: {
     type: "object",
     properties: {
